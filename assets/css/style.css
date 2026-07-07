@@ -952,12 +952,15 @@ td.action-cell {
 
 .editable-field {
     display: inline-block;
+    max-width: 100%;
     min-width: 70px;
     min-height: 1.2em;
     padding: 0 3px;
     border-bottom: 1px dotted currentColor;
     outline: 0;
     cursor: text;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
 }
 
 .editable-field:focus {
@@ -1244,6 +1247,10 @@ td.action-cell {
     min-height: 28px;
 }
 
+.registry-record .editable-field {
+    min-width: 0;
+}
+
 .caution-document {
     position: relative;
     overflow: hidden;
@@ -1350,8 +1357,11 @@ td.action-cell {
 }
 
 .caution-document .editable-field {
+    max-width: 100%;
     min-width: 110px;
     border-bottom: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
 }
 
 .caution-document .editable-field:empty::before {
@@ -1378,6 +1388,7 @@ td.action-cell {
     align-items: baseline;
     gap: 44px;
     padding: 12px 10px 0;
+    min-width: 0;
 }
 
 .caution-field-row strong {
@@ -1396,10 +1407,12 @@ td.action-cell {
     padding: 14px 10px;
     border-top: 0;
     font-size: 0.92rem;
+    min-width: 0;
 }
 
 .caution-wide-field {
     flex: 1;
+    max-width: 100%;
     min-width: 260px;
 }
 
@@ -1435,6 +1448,7 @@ td.action-cell {
 }
 
 .table-fill {
+    display: block;
     width: 100%;
     min-width: 0;
     border-bottom: 0;
