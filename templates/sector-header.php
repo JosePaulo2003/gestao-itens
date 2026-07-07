@@ -18,6 +18,83 @@ $logoutLabel = is_super_admin($user) ? 'Sair do Admin Maximo' : 'Sair';
 // Quando o usuario nao tem foto cadastrada, exibimos a inicial do nome.
 $initial = strtoupper(substr((string) $user['name'], 0, 1));
 ?>
+<?php if ($user['sector'] === 'lab-designer'): ?>
+<style id="force-lab-designer-palette">
+    /*
+     * Camada de emergencia do Lab de Designer.
+     * Fica no cabecalho para vencer cache ou regras antigas do CSS principal.
+     */
+    body.theme-lab-designer {
+        background:
+            radial-gradient(circle at 14% 4%, rgba(234, 7, 254, 0.28), transparent 28%),
+            radial-gradient(circle at 88% 8%, rgba(61, 208, 255, 0.24), transparent 34%),
+            linear-gradient(180deg, #000000 0%, #213172 300px, #081033 64%, #000000 100%) !important;
+        color: #ffffff !important;
+    }
+
+    body.theme-lab-designer .sector-topbar.sector-theme-lab-designer {
+        background: linear-gradient(135deg, #000000 0%, #213172 45%, #730dcb 80%, #ea07fe 130%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34) !important;
+    }
+
+    body.theme-lab-designer .sector-nav {
+        background: #000000 !important;
+        border-bottom-color: rgba(61, 208, 255, 0.28) !important;
+    }
+
+    body.theme-lab-designer .sector-nav a {
+        color: #ffffff !important;
+    }
+
+    body.theme-lab-designer .sector-nav a.active,
+    body.theme-lab-designer .sector-nav a:hover,
+    body.theme-lab-designer .report-tabs a.active,
+    body.theme-lab-designer .report-tabs a:hover {
+        background: #3dd0ff !important;
+        border-color: #3dd0ff !important;
+        color: #000000 !important;
+    }
+
+    body.theme-lab-designer .welcome,
+    body.theme-lab-designer .panel,
+    body.theme-lab-designer .module-card,
+    body.theme-lab-designer .summary-card,
+    body.theme-lab-designer .report-document,
+    body.theme-lab-designer .admin-sector-card {
+        background: linear-gradient(145deg, rgba(33, 49, 114, 0.96), rgba(0, 0, 0, 0.92)) !important;
+        border-color: rgba(61, 208, 255, 0.34) !important;
+        color: #ffffff !important;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(234, 7, 254, 0.08) !important;
+    }
+
+    body.theme-lab-designer .sector-hero {
+        background: linear-gradient(135deg, #000000 0%, #213172 42%, #730dcb 82%, #ea07fe 132%) !important;
+        border: 1px solid rgba(61, 208, 255, 0.28) !important;
+    }
+
+    body.theme-lab-designer .module-card h3,
+    body.theme-lab-designer .summary-card h3,
+    body.theme-lab-designer .panel h2,
+    body.theme-lab-designer .report-cover h2 {
+        color: #ffffff !important;
+    }
+
+    body.theme-lab-designer .summary-card strong,
+    body.theme-lab-designer .report-kicker,
+    body.theme-lab-designer .eyebrow {
+        color: #3dd0ff !important;
+    }
+
+    body.theme-lab-designer .muted,
+    body.theme-lab-designer .empty,
+    body.theme-lab-designer .module-card p,
+    body.theme-lab-designer .summary-card span,
+    body.theme-lab-designer .sector-hero p {
+        color: rgba(255, 255, 255, 0.74) !important;
+    }
+</style>
+<?php endif; ?>
 <header class="topbar sector-topbar <?= e($themeClass) ?>">
     <div class="sector-userbar">
         <?php if (!empty($user['photo_path'])): ?>
