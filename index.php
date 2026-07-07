@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Gestão de Recurso Setorial - Login</title>
-    <link rel="stylesheet" href="<?= e(url_for('/assets/css/style.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="login-page">
     <header class="login-header clean-login-header">

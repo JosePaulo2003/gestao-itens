@@ -875,6 +875,10 @@ td.action-cell {
     width: min(1180px, calc(100% - 32px));
 }
 
+.document-sheet {
+    isolation: isolate;
+}
+
 .report-toolbar,
 .report-actions {
     display: flex;
@@ -1042,8 +1046,10 @@ td.action-cell {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     width: min(1180px, 100%);
-    min-height: 540px;
-    padding: 28px;
+    aspect-ratio: 1.414 / 1;
+    min-height: 560px;
+    margin: 0 auto;
+    padding: 0;
     border: 1px solid #111;
     background: #fff;
     color: #111;
@@ -1052,7 +1058,7 @@ td.action-cell {
 
 .registry-slip {
     display: grid;
-    grid-template-rows: 230px 1fr;
+    grid-template-rows: 42% 58%;
     min-width: 0;
     border-left: 1px solid #111;
 }
@@ -1078,13 +1084,14 @@ td.action-cell {
     display: grid;
     align-content: center;
     justify-items: center;
-    gap: 18px;
-    padding: 14px 10px;
+    gap: 24px;
+    padding: 18px 10px;
     border-left: 1px solid #111;
 }
 
 .registry-received strong {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
+    line-height: 1.15;
 }
 
 .registry-received span {
@@ -1092,17 +1099,18 @@ td.action-cell {
 }
 
 .registry-destination {
-    padding: 14px 10px;
-    font-size: 1.05rem;
+    padding: 18px 12px;
+    font-size: 1.18rem;
     font-weight: 700;
 }
 
 .registry-body {
     display: grid;
     align-content: stretch;
-    gap: 10px;
-    padding: 16px 8px;
-    font-size: 0.95rem;
+    grid-template-rows: auto auto repeat(4, 1fr);
+    gap: 8px;
+    padding: 18px 10px;
+    font-size: 1.02rem;
 }
 
 .registry-body strong {
@@ -1116,25 +1124,27 @@ td.action-cell {
 
 .registry-body p {
     margin: 0;
-    letter-spacing: 0.08em;
+    border-left: 3px dotted #111;
+    letter-spacing: 0;
 }
 
 .registry-font {
     position: absolute;
-    right: -58px;
-    bottom: 36px;
+    right: -64px;
+    bottom: 44px;
     color: #111;
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     transform: rotate(90deg);
 }
 
 .caution-document {
     position: relative;
     overflow: hidden;
-    width: min(860px, 100%);
-    min-height: 1218px;
+    width: min(820px, 100%);
+    aspect-ratio: 210 / 297;
+    min-height: 1120px;
     margin: 0 auto;
-    padding: 42px 72px 54px;
+    padding: 44px 82px 58px;
     border: 1px solid #e5e7eb;
     background: #fff;
     color: #111;
@@ -1147,7 +1157,7 @@ td.action-cell {
 }
 
 .caution-corner-top-left {
-    top: -58px;
+    top: -66px;
     left: 56px;
     width: 150px;
     height: 150px;
@@ -1159,18 +1169,18 @@ td.action-cell {
 .caution-corner-top-right {
     top: -70px;
     right: -30px;
-    width: 180px;
-    height: 180px;
+    width: 190px;
+    height: 190px;
     border: 2px solid #f4e600;
     border-radius: 0 0 28px 28px;
     transform: rotate(45deg);
 }
 
 .caution-corner-bottom-left {
-    left: -80px;
-    bottom: 120px;
-    width: 250px;
-    height: 250px;
+    left: -104px;
+    bottom: 180px;
+    width: 300px;
+    height: 300px;
     background: rgba(31, 60, 111, 0.08);
     transform: rotate(45deg);
 }
@@ -1189,7 +1199,7 @@ td.action-cell {
     position: relative;
     display: grid;
     justify-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 34px;
     text-align: center;
 }
 
@@ -1215,7 +1225,7 @@ td.action-cell {
 .caution-brand strong {
     display: block;
     color: #1ca64a;
-    font-size: 2.6rem;
+    font-size: 3rem;
     line-height: 0.9;
 }
 
@@ -1227,17 +1237,17 @@ td.action-cell {
 .caution-colorbar {
     width: 260px;
     height: 8px;
-    margin: 4px 0 28px;
+    margin: 4px 0 30px;
     background: linear-gradient(90deg, #1d355c 0 34%, #1ca64a 34% 67%, #f4e600 67%);
 }
 
 .caution-header h2 {
     margin-bottom: 22px;
-    font-size: 1.08rem;
+    font-size: 1.16rem;
 }
 
 .caution-header h3 {
-    font-size: 1rem;
+    font-size: 1.04rem;
 }
 
 .caution-box,
@@ -1252,7 +1262,7 @@ td.action-cell {
     gap: 12px;
     padding: 7px 10px;
     border-bottom: 1px solid #111;
-    font-size: 0.92rem;
+    font-size: 0.98rem;
 }
 
 .caution-field-row {
@@ -1266,11 +1276,11 @@ td.action-cell {
 }
 
 .caution-large-line {
-    min-height: 62px;
+    min-height: 72px;
 }
 
 .caution-observation {
-    min-height: 44px;
+    min-height: 50px;
     padding: 14px 10px;
     border-top: 0;
     font-size: 0.92rem;
@@ -1279,10 +1289,10 @@ td.action-cell {
 .caution-table {
     position: relative;
     width: 100%;
-    margin-top: 24px;
+    margin-top: 28px;
     border-collapse: collapse;
     color: #111;
-    font-size: 0.9rem;
+    font-size: 0.94rem;
 }
 
 .caution-table th {
@@ -1295,7 +1305,7 @@ td.action-cell {
 }
 
 .caution-table td {
-    height: 58px;
+    height: 64px;
     padding: 8px 10px;
     border: 1px solid #111;
     color: #111;
@@ -1318,7 +1328,7 @@ td.action-cell {
 .caution-signatures {
     display: grid;
     gap: 16px;
-    margin-top: 106px;
+    margin-top: 118px;
     font-size: 1rem;
 }
 
@@ -1332,7 +1342,7 @@ td.action-cell {
 .caution-footer {
     position: absolute;
     right: 72px;
-    bottom: 44px;
+    bottom: 48px;
     left: 72px;
     display: grid;
     grid-template-columns: 1.1fr 1fr 1fr;

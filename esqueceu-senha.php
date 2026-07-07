@@ -17,7 +17,7 @@ require_once __DIR__ . '/includes/auth.php';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Recuperar senha - Gestão de Recurso Setorial</title>
-    <link rel="stylesheet" href="<?= e(url_for('/assets/css/style.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="login-page">
     <header class="login-header">

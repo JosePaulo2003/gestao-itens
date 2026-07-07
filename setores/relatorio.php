@@ -40,13 +40,13 @@ while (count($cautionRows) < 4) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Relatorio - Gestao de Recurso Setorial</title>
-    <link rel="stylesheet" href="<?= e(url_for('/assets/css/style.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
     <?php require __DIR__ . '/../templates/sector-header.php'; ?>
 
     <main class="dashboard report-dashboard <?= $documentType === 'livro-registro' ? 'report-landscape' : '' ?>">
-        <section class="report-toolbar" aria-label="Tipos de documentos">
+        <section class="report-toolbar no-print" aria-label="Tipos de documentos">
             <div class="report-tabs">
                 <?php foreach ($documents as $key => $label): ?>
                     <a class="<?= $documentType === $key ? 'active' : '' ?>" href="<?= e(url_for('/setores/relatorio.php?doc=' . $key)) ?>">
@@ -219,7 +219,7 @@ while (count($cautionRows) < 4) {
         <?php endif; ?>
 
         <?php if ($documentType === 'livro-registro'): ?>
-            <article class="registry-document">
+            <article class="registry-document document-sheet">
                 <?php for ($record = 0; $record < 5; $record++): ?>
                     <section class="registry-slip">
                         <div class="registry-top">
@@ -247,7 +247,7 @@ while (count($cautionRows) < 4) {
         <?php endif; ?>
 
         <?php if ($documentType === 'cautela'): ?>
-            <article class="caution-document">
+            <article class="caution-document document-sheet">
                 <div class="caution-corner caution-corner-top-left"></div>
                 <div class="caution-corner caution-corner-top-right"></div>
                 <div class="caution-corner caution-corner-bottom-left"></div>

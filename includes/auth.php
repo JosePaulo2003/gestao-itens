@@ -221,6 +221,22 @@ function url_for(string $path = ''): string
     return $basePath . $cleanPath;
 }
 
+function asset_url(string $path): string
+{
+    /*
+     * Adiciona versao automatica aos arquivos estaticos.
+     * Isso evita que o navegador mantenha CSS antigo em cache apos git pull.
+     */
+    $url = url_for($path);
+    $filePath = __DIR__ . '/../' . ltrim($path, '/');
+
+    if (is_file($filePath)) {
+        $url .= '?v=' . filemtime($filePath);
+    }
+
+    return $url;
+}
+
 function safe_local_redirect_path(?string $nextUrl): ?string
 {
     /*

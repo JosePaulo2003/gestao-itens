@@ -59,7 +59,7 @@ $sectorUsers = list_users_by_sector($user['sector']);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Usuarios - Gestao de Recurso Setorial</title>
-    <link rel="stylesheet" href="<?= e(url_for('/assets/css/style.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
     <?php require __DIR__ . '/../templates/sector-header.php'; ?>
