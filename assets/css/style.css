@@ -879,6 +879,21 @@ td.action-cell {
     isolation: isolate;
 }
 
+.editable-field {
+    display: inline-block;
+    min-width: 70px;
+    min-height: 1.2em;
+    padding: 0 3px;
+    border-bottom: 1px dotted currentColor;
+    outline: 0;
+    cursor: text;
+}
+
+.editable-field:focus {
+    background: rgba(113, 244, 53, 0.14);
+    box-shadow: 0 0 0 2px rgba(47, 111, 131, 0.16);
+}
+
 .report-toolbar,
 .report-actions {
     display: flex;
@@ -929,6 +944,12 @@ td.action-cell {
     font: inherit;
     font-weight: 700;
     cursor: pointer;
+}
+
+.document-hint {
+    margin: -4px 0 16px;
+    color: var(--theme-muted);
+    font-size: 0.9rem;
 }
 
 .report-document {
@@ -1098,6 +1119,14 @@ td.action-cell {
     font-size: 0.72rem;
 }
 
+.registry-date {
+    min-width: 112px;
+}
+
+.registry-signature {
+    min-width: 140px;
+}
+
 .registry-destination {
     padding: 18px 12px;
     font-size: 1.18rem;
@@ -1126,6 +1155,12 @@ td.action-cell {
     margin: 0;
     border-left: 3px dotted #111;
     letter-spacing: 0;
+}
+
+.registry-body .editable-field {
+    width: 100%;
+    height: 100%;
+    border-bottom: 0;
 }
 
 .registry-font {
@@ -1203,35 +1238,13 @@ td.action-cell {
     text-align: center;
 }
 
-.caution-brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 8px;
-}
-
-.caution-seal {
-    display: grid;
-    width: 64px;
-    height: 64px;
-    place-items: center;
-    border: 3px solid #f4e600;
-    border-radius: 50%;
-    background: #1ca64a;
-    color: #fff;
-    font-weight: 800;
-}
-
-.caution-brand strong {
+.caution-logo {
     display: block;
-    color: #1ca64a;
-    font-size: 3rem;
-    line-height: 0.9;
-}
-
-.caution-brand small {
-    color: #1d355c;
-    font-weight: 800;
+    width: 245px;
+    max-width: 60%;
+    height: auto;
+    margin-bottom: 10px;
+    mix-blend-mode: multiply;
 }
 
 .caution-colorbar {
@@ -1267,6 +1280,7 @@ td.action-cell {
 
 .caution-field-row {
     display: flex;
+    align-items: baseline;
     gap: 44px;
     padding: 12px 10px 0;
 }
@@ -1280,10 +1294,18 @@ td.action-cell {
 }
 
 .caution-observation {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
     min-height: 50px;
     padding: 14px 10px;
     border-top: 0;
     font-size: 0.92rem;
+}
+
+.caution-wide-field {
+    flex: 1;
+    min-width: 260px;
 }
 
 .caution-table {
@@ -1315,6 +1337,12 @@ td.action-cell {
 .caution-table td:nth-child(2),
 .caution-table td:nth-child(3) {
     text-align: center;
+}
+
+.table-fill {
+    width: 100%;
+    min-width: 0;
+    border-bottom: 0;
 }
 
 .caution-authorization {
@@ -1567,6 +1595,7 @@ td.action-cell {
 
     .sector-topbar,
     .sector-nav,
+    .no-print,
     .report-toolbar,
     .report-actions {
         display: none;
@@ -1624,5 +1653,12 @@ td.action-cell {
     .registry-document,
     .caution-document {
         break-after: avoid;
+    }
+
+    .editable-field {
+        box-shadow: none;
+        background: transparent;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 }

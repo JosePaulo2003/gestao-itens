@@ -58,6 +58,10 @@ while (count($cautionRows) < 4) {
             <button type="button" onclick="window.print()">Imprimir / salvar PDF</button>
         </section>
 
+        <?php if (in_array($documentType, ['livro-registro', 'cautela'], true)): ?>
+            <p class="document-hint no-print">Clique nos campos pontilhados para preencher o documento antes de imprimir.</p>
+        <?php endif; ?>
+
         <?php if ($documentType === 'itens'): ?>
             <article class="report-document">
                 <header class="report-cover">
@@ -224,21 +228,22 @@ while (count($cautionRows) < 4) {
                     <section class="registry-slip">
                         <div class="registry-top">
                             <div class="registry-received">
-                                <strong>RECEBIDO em ....../....../......</strong>
-                                <span>Assinatura ou Carimbo</span>
+                                <strong>RECEBIDO em <span class="editable-field registry-date" contenteditable="true">____/____/______</span></strong>
+                                <span class="editable-field registry-signature" contenteditable="true">Assinatura ou Carimbo</span>
                             </div>
                             <div class="registry-destination">
                                 <strong>Destinatario</strong>
-                                <span>Rua.........................................</span>
+                                <span>Nome: <span class="editable-field" contenteditable="true">.........................................</span></span>
+                                <span>Rua: <span class="editable-field" contenteditable="true">.........................................</span></span>
                             </div>
                         </div>
                         <div class="registry-body">
                             <strong>DESCRICAO</strong>
-                            <span>N. ...............</span>
-                            <p>............................................................................</p>
-                            <p>............................................................................</p>
-                            <p>............................................................................</p>
-                            <p>............................................................................</p>
+                            <span>N. <span class="editable-field" contenteditable="true">...............</span></span>
+                            <p class="editable-field" contenteditable="true"></p>
+                            <p class="editable-field" contenteditable="true"></p>
+                            <p class="editable-field" contenteditable="true"></p>
+                            <p class="editable-field" contenteditable="true"></p>
                         </div>
                     </section>
                 <?php endfor; ?>
@@ -254,13 +259,7 @@ while (count($cautionRows) < 4) {
                 <div class="caution-corner caution-corner-bottom-right"></div>
 
                 <header class="caution-header">
-                    <div class="caution-brand">
-                        <span class="caution-seal">AM</span>
-                        <div>
-                            <strong>AMAZONAS</strong>
-                            <small>GOVERNO DO ESTADO</small>
-                        </div>
-                    </div>
+                    <img class="caution-logo" src="<?= e(asset_url('/assets/img/logo-amazonas.jpeg')) ?>" alt="Governo do Estado do Amazonas">
                     <span class="caution-colorbar"></span>
                     <h2>CENTRO DE ESTUDOS SUPERIORES DE ITACOATIARA - CESIT/UEA</h2>
                     <h3>Cautela de Emprestimo de Materiais/Equipamentos</h3>
@@ -268,20 +267,22 @@ while (count($cautionRows) < 4) {
 
                 <section class="caution-box">
                     <div class="caution-box-title">
-                        <strong>CAUTELA/DIRECAO_D. I/CESIT/UEA-____/<?= e(date('Y')) ?></strong>
-                        <span>Data Saida ___/___/______</span>
+                        <strong>CAUTELA/DIRECAO_D. I/CESIT/UEA-<span class="editable-field" contenteditable="true">____</span>/<?= e(date('Y')) ?></strong>
+                        <span>Data Saida <span class="editable-field" contenteditable="true">___/___/______</span></span>
                     </div>
                     <div class="caution-field-row">
                         <span>Origem:</span>
-                        <strong>D.I/CESIT/UEA</strong>
+                        <strong class="editable-field" contenteditable="true">D.I/CESIT/UEA</strong>
                     </div>
                     <div class="caution-field-row caution-large-line">
                         <span>Destinatario(a):</span>
+                        <span class="editable-field caution-wide-field" contenteditable="true"></span>
                     </div>
                 </section>
 
                 <section class="caution-observation">
                     <strong>Observacao:</strong>
+                    <span class="editable-field caution-wide-field" contenteditable="true"></span>
                 </section>
 
                 <table class="caution-table">
@@ -298,24 +299,24 @@ while (count($cautionRows) < 4) {
                         <?php foreach ($cautionRows as $index => $item): ?>
                             <tr>
                                 <td><?= $index + 1 ?></td>
-                                <td><?= $item ? (int) $item['quantity'] : '' ?></td>
-                                <td><strong>Un.</strong></td>
-                                <td><?= $item ? e($item['name']) : '' ?></td>
-                                <td><?= $item ? 'Item ' . (int) $item['id'] : '' ?></td>
+                                <td><span class="editable-field table-fill" contenteditable="true"><?= $item ? (int) $item['quantity'] : '' ?></span></td>
+                                <td><strong class="editable-field table-fill" contenteditable="true">Un.</strong></td>
+                                <td><span class="editable-field table-fill" contenteditable="true"><?= $item ? e($item['name']) : '' ?></span></td>
+                                <td><span class="editable-field table-fill" contenteditable="true"><?= $item ? 'Item ' . (int) $item['id'] : '' ?></span></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
 
                 <section class="caution-authorization">
-                    <strong>Autorizado por:</strong>
-                    <strong>Data:</strong>
+                    <strong>Autorizado por: <span class="editable-field" contenteditable="true">____________________________</span></strong>
+                    <strong>Data: <span class="editable-field" contenteditable="true">___/___/______</span></strong>
                 </section>
 
                 <section class="caution-signatures">
-                    <p>Entregue por: ____________________________________ <span>Data:</span></p>
-                    <p>Recebido por: ____________________________________ <span>Data:</span></p>
-                    <p>Devolvido por: ___________________________________ <span>Data:</span></p>
+                    <p>Entregue por: <span class="editable-field" contenteditable="true">____________________________________</span> <span>Data: <span class="editable-field" contenteditable="true">___/___/______</span></span></p>
+                    <p>Recebido por: <span class="editable-field" contenteditable="true">____________________________________</span> <span>Data: <span class="editable-field" contenteditable="true">___/___/______</span></span></p>
+                    <p>Devolvido por: <span class="editable-field" contenteditable="true">___________________________________</span> <span>Data: <span class="editable-field" contenteditable="true">___/___/______</span></span></p>
                 </section>
 
                 <footer class="caution-footer">
