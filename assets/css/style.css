@@ -1173,19 +1173,27 @@ td.action-cell {
 .caution-document {
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     width: min(820px, 100%);
     aspect-ratio: 210 / 297;
     min-height: 1120px;
     margin: 0 auto;
-    padding: 44px 82px 58px;
+    padding: 40px 82px 44px;
     border: 1px solid #e5e7eb;
     background: #fff;
     color: #111;
     box-shadow: 0 18px 50px var(--theme-shadow);
 }
 
+.caution-document > :not(.caution-corner) {
+    position: relative;
+    z-index: 1;
+}
+
 .caution-corner {
     position: absolute;
+    z-index: 0;
     pointer-events: none;
 }
 
@@ -1211,7 +1219,7 @@ td.action-cell {
 
 .caution-corner-bottom-left {
     left: -104px;
-    bottom: 180px;
+    bottom: 118px;
     width: 300px;
     height: 300px;
     background: rgba(31, 60, 111, 0.08);
@@ -1309,7 +1317,7 @@ td.action-cell {
 .caution-table {
     position: relative;
     width: 100%;
-    margin-top: 28px;
+    margin-top: 24px;
     border-collapse: collapse;
     color: #111;
     font-size: 0.94rem;
@@ -1347,33 +1355,41 @@ td.action-cell {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 80px;
-    margin-top: 24px;
+    margin-top: 20px;
     font-size: 1rem;
 }
 
 .caution-signatures {
     display: grid;
-    gap: 16px;
-    margin-top: 118px;
+    gap: 12px;
+    margin-top: 54px;
     font-size: 1rem;
 }
 
 .caution-signatures p {
-    display: flex;
-    justify-content: space-between;
-    gap: 24px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: end;
     margin: 0;
 }
 
+.caution-signatures p > .editable-field {
+    width: 100%;
+    min-width: 0;
+}
+
+.caution-signatures p > span:last-child {
+    white-space: nowrap;
+}
+
 .caution-footer {
-    position: absolute;
-    right: 72px;
-    bottom: 48px;
-    left: 72px;
     display: grid;
     grid-template-columns: 1.1fr 1fr 1fr;
     gap: 18px;
     align-items: end;
+    margin-top: auto;
+    padding-top: 26px;
     color: #1d355c;
     font-size: 0.78rem;
 }
@@ -1557,9 +1573,8 @@ td.action-cell {
     }
 
     .caution-footer {
-        position: static;
         grid-template-columns: 1fr;
-        margin-top: 48px;
+        margin-top: 36px;
     }
 
     .registry-page-document {
@@ -1646,15 +1661,18 @@ td.action-cell {
     .caution-document {
         width: 100%;
         min-height: 277mm;
-        padding: 20mm 16mm 14mm;
+        padding: 14mm 16mm 12mm;
         border: 0;
         box-shadow: none;
     }
 
     .caution-footer {
-        right: 16mm;
-        bottom: 14mm;
-        left: 16mm;
+        position: relative;
+        right: auto;
+        bottom: auto;
+        left: auto;
+        margin-top: auto;
+        padding-top: 18px;
     }
 
     .report-document,
