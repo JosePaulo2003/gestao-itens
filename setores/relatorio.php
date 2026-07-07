@@ -45,7 +45,7 @@ while (count($cautionRows) < 4) {
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
     <?php require __DIR__ . '/../templates/sector-header.php'; ?>
 
-    <main class="dashboard report-dashboard <?= $documentType === 'livro-registro' ? 'report-landscape' : '' ?>">
+    <main class="dashboard report-dashboard">
         <section class="report-toolbar no-print" aria-label="Tipos de documentos">
             <div class="report-tabs">
                 <?php foreach ($documents as $key => $label): ?>
@@ -223,32 +223,89 @@ while (count($cautionRows) < 4) {
         <?php endif; ?>
 
         <?php if ($documentType === 'livro-registro'): ?>
-            <article class="registry-document document-sheet">
-                <?php for ($record = 0; $record < 5; $record++): ?>
-                    <section class="registry-slip">
-                        <div class="registry-top">
-                            <div class="registry-received">
-                                <strong>RECEBIDO em <span class="editable-field registry-date" contenteditable="true">____/____/______</span></strong>
-                                <span class="editable-field registry-signature" contenteditable="true">Assinatura ou Carimbo</span>
-                            </div>
-                            <div class="registry-destination">
-                                <strong>Destinatario</strong>
-                                <span>Nome: <span class="editable-field" contenteditable="true">.........................................</span></span>
-                                <span>Rua: <span class="editable-field" contenteditable="true">.........................................</span></span>
-                            </div>
+            <div class="registry-controls no-print">
+                <button type="button" id="add-registry-record">Adicionar registro na pagina</button>
+            </div>
+
+            <article class="registry-page-document document-sheet" id="registry-document">
+                <section class="registry-record">
+                    <header class="registry-record-header">
+                        <div>
+                            <strong>RECEBIDO em</strong>
+                            <span class="editable-field registry-date" contenteditable="true">____/____/______</span>
                         </div>
-                        <div class="registry-body">
+                        <span class="editable-field registry-signature" contenteditable="true">Assinatura ou Carimbo</span>
+                    </header>
+
+                    <div class="registry-recipient">
+                        <label>Destinatario Nome:</label>
+                        <span class="editable-field" contenteditable="true"></span>
+                        <label>Rua:</label>
+                        <span class="editable-field" contenteditable="true"></span>
+                    </div>
+
+                    <div class="registry-description">
+                        <div class="registry-description-title">
                             <strong>DESCRICAO</strong>
-                            <span>N. <span class="editable-field" contenteditable="true">...............</span></span>
-                            <p class="editable-field" contenteditable="true"></p>
-                            <p class="editable-field" contenteditable="true"></p>
-                            <p class="editable-field" contenteditable="true"></p>
-                            <p class="editable-field" contenteditable="true"></p>
+                            <span>N. <span class="editable-field registry-number" contenteditable="true"></span></span>
                         </div>
-                    </section>
-                <?php endfor; ?>
-                <span class="registry-font">Fonte 22</span>
+                        <div class="registry-lines">
+                            <span class="editable-field" contenteditable="true"></span>
+                            <span class="editable-field" contenteditable="true"></span>
+                            <span class="editable-field" contenteditable="true"></span>
+                            <span class="editable-field" contenteditable="true"></span>
+                        </div>
+                    </div>
+                </section>
             </article>
+
+            <template id="registry-record-template">
+                <section class="registry-record">
+                    <header class="registry-record-header">
+                        <div>
+                            <strong>RECEBIDO em</strong>
+                            <span class="editable-field registry-date" contenteditable="true">____/____/______</span>
+                        </div>
+                        <span class="editable-field registry-signature" contenteditable="true">Assinatura ou Carimbo</span>
+                    </header>
+
+                    <div class="registry-recipient">
+                        <label>Destinatario Nome:</label>
+                        <span class="editable-field" contenteditable="true"></span>
+                        <label>Rua:</label>
+                        <span class="editable-field" contenteditable="true"></span>
+                    </div>
+
+                    <div class="registry-description">
+                        <div class="registry-description-title">
+                            <strong>DESCRICAO</strong>
+                            <span>N. <span class="editable-field registry-number" contenteditable="true"></span></span>
+                        </div>
+                        <div class="registry-lines">
+                            <span class="editable-field" contenteditable="true"></span>
+                            <span class="editable-field" contenteditable="true"></span>
+                            <span class="editable-field" contenteditable="true"></span>
+                            <span class="editable-field" contenteditable="true"></span>
+                        </div>
+                    </div>
+                </section>
+            </template>
+
+            <script>
+                (() => {
+                    const addButton = document.getElementById('add-registry-record');
+                    const registryDocument = document.getElementById('registry-document');
+                    const recordTemplate = document.getElementById('registry-record-template');
+
+                    if (!addButton || !registryDocument || !recordTemplate) {
+                        return;
+                    }
+
+                    addButton.addEventListener('click', () => {
+                        registryDocument.appendChild(recordTemplate.content.cloneNode(true));
+                    });
+                })();
+            </script>
         <?php endif; ?>
 
         <?php if ($documentType === 'cautela'): ?>
@@ -259,7 +316,7 @@ while (count($cautionRows) < 4) {
                 <div class="caution-corner caution-corner-bottom-right"></div>
 
                 <header class="caution-header">
-                    <img class="caution-logo" src="<?= e(asset_url('/assets/img/logo-amazonas.jpeg')) ?>" alt="Governo do Estado do Amazonas">
+                    <img class="caution-logo" src="<?= e(asset_url('/assets/img/logo-amazonas.png')) ?>" alt="Governo do Estado do Amazonas">
                     <span class="caution-colorbar"></span>
                     <h2>CENTRO DE ESTUDOS SUPERIORES DE ITACOATIARA - CESIT/UEA</h2>
                     <h3>Cautela de Emprestimo de Materiais/Equipamentos</h3>
