@@ -1082,11 +1082,12 @@ td.action-cell {
 
 .report-summary {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
 }
 
 .report-summary div {
+    min-width: 0;
     padding: 14px;
     border: 1px solid var(--theme-border);
     border-radius: 8px;
@@ -1102,6 +1103,8 @@ td.action-cell {
 .report-summary strong {
     color: var(--theme-primary);
     font-size: 1.8rem;
+    overflow-wrap: anywhere;
+    line-height: 1.15;
 }
 
 .report-table th {
