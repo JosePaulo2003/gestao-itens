@@ -324,8 +324,8 @@ while (count($cautionRows) < 4) {
 
                 <section class="caution-box">
                     <div class="caution-box-title">
-                        <strong>CAUTELA/DIRECAO_D. I/CESIT/UEA-<span class="editable-field" contenteditable="true">____</span>/<?= e(date('Y')) ?></strong>
-                        <span>Data Saida <span class="editable-field" contenteditable="true">___/___/______</span></span>
+                        <strong>CAUTELA/DIRECAO_D. I/CESIT/UEA-<span class="editable-field" contenteditable="true"></span>/<?= e(date('Y')) ?></strong>
+                        <span>Data Saida <span class="editable-field" contenteditable="true"></span></span>
                     </div>
                     <div class="caution-field-row">
                         <span>Origem:</span>
@@ -366,14 +366,14 @@ while (count($cautionRows) < 4) {
                 </table>
 
                 <section class="caution-authorization">
-                    <strong>Autorizado por: <span class="editable-field" contenteditable="true">____________________________</span></strong>
-                    <strong>Data: <span class="editable-field" contenteditable="true">___/___/______</span></strong>
+                    <strong>Autorizado por: <span class="editable-field" contenteditable="true"></span></strong>
+                    <strong>Data: <span class="editable-field" contenteditable="true"></span></strong>
                 </section>
 
                 <section class="caution-signatures">
-                    <p>Entregue por: <span class="editable-field" contenteditable="true">____________________________________</span> <span>Data: <span class="editable-field" contenteditable="true">___/___/______</span></span></p>
-                    <p>Recebido por: <span class="editable-field" contenteditable="true">____________________________________</span> <span>Data: <span class="editable-field" contenteditable="true">___/___/______</span></span></p>
-                    <p>Devolvido por: <span class="editable-field" contenteditable="true">___________________________________</span> <span>Data: <span class="editable-field" contenteditable="true">___/___/______</span></span></p>
+                    <p>Entregue por: <span class="editable-field" contenteditable="true"></span> <span>Data: <span class="editable-field" contenteditable="true"></span></span></p>
+                    <p>Recebido por: <span class="editable-field" contenteditable="true"></span> <span>Data: <span class="editable-field" contenteditable="true"></span></span></p>
+                    <p>Devolvido por: <span class="editable-field" contenteditable="true"></span> <span>Data: <span class="editable-field" contenteditable="true"></span></span></p>
                 </section>
 
                 <footer class="caution-footer">

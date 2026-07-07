@@ -1275,6 +1275,15 @@ td.action-cell {
     border: 1px solid #111;
 }
 
+.caution-document .editable-field {
+    min-width: 110px;
+    border-bottom: 0;
+}
+
+.caution-document .editable-field:empty::before {
+    content: "\00a0";
+}
+
 .caution-box-title {
     display: flex;
     justify-content: space-between;
@@ -1377,6 +1386,11 @@ td.action-cell {
 .caution-signatures p > .editable-field {
     width: 100%;
     min-width: 0;
+}
+
+.caution-authorization .editable-field,
+.caution-signatures .editable-field {
+    min-height: 1.35em;
 }
 
 .caution-signatures p > span:last-child {
