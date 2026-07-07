@@ -60,22 +60,21 @@ body.theme-lab-maker {
 
 body.theme-lab-designer {
     /* Tema do Lab de Designer: paleta preta, azul, ciano, roxo e magenta. */
-    --theme-bg: #f4fbff;
-    --theme-panel: #ffffff;
-    --theme-text: #000000;
-    --theme-muted: #44506f;
+    --theme-bg: #000000;
+    --theme-panel: #101b4a;
+    --theme-text: #ffffff;
+    --theme-muted: rgba(255, 255, 255, 0.74);
     --theme-primary: #213172;
     --theme-secondary: #730dcb;
     --theme-accent: #3dd0ff;
-    --theme-soft: rgba(61, 208, 255, 0.16);
-    --theme-border: rgba(33, 49, 114, 0.22);
-    --theme-shadow: rgba(115, 13, 203, 0.13);
+    --theme-soft: rgba(61, 208, 255, 0.2);
+    --theme-border: rgba(61, 208, 255, 0.3);
+    --theme-shadow: rgba(234, 7, 254, 0.18);
     --theme-on-primary: #ffffff;
     background:
-        radial-gradient(circle at 12% 4%, rgba(234, 7, 254, 0.12), transparent 30%),
-        radial-gradient(circle at 88% 0%, rgba(61, 208, 255, 0.18), transparent 34%),
-        linear-gradient(180deg, rgba(33, 49, 114, 0.05), transparent 340px),
-        var(--theme-bg);
+        radial-gradient(circle at 15% 4%, rgba(234, 7, 254, 0.24), transparent 28%),
+        radial-gradient(circle at 88% 6%, rgba(61, 208, 255, 0.22), transparent 34%),
+        linear-gradient(180deg, #000000 0%, #213172 290px, #081033 62%, #000000 100%);
     color: var(--theme-text);
 }
 
@@ -455,8 +454,9 @@ p {
 
 .sector-topbar.sector-theme-lab-designer {
     background:
-        linear-gradient(135deg, #000000 0%, #213172 48%, #730dcb 100%);
+        linear-gradient(135deg, #000000 0%, #213172 48%, #730dcb 82%, #ea07fe 130%);
     color: #fff;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
 }
 
 .sector-topbar.sector-theme-admin {
@@ -828,30 +828,65 @@ body.theme-lab-designer .module-card,
 body.theme-lab-designer .summary-card,
 body.theme-lab-designer .report-document,
 body.theme-lab-designer .admin-sector-card {
-    border-color: rgba(33, 49, 114, 0.2);
-    box-shadow: 0 18px 42px rgba(115, 13, 203, 0.11);
+    background:
+        linear-gradient(145deg, rgba(33, 49, 114, 0.94), rgba(0, 0, 0, 0.92));
+    border-color: rgba(61, 208, 255, 0.32);
+    color: #ffffff;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(234, 7, 254, 0.06);
 }
 
 body.theme-lab-designer .form-grid input,
 body.theme-lab-designer .form-grid textarea,
 body.theme-lab-designer .form-grid select,
 body.theme-lab-designer .stock-form input {
-    background: #fbfdff;
+    background: rgba(0, 0, 0, 0.24);
+    color: #ffffff;
 }
 
 body.theme-lab-designer .sector-hero {
     background:
-        linear-gradient(135deg, #213172 0%, #730dcb 72%, #ea07fe 125%);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+        linear-gradient(135deg, #000000 0%, #213172 44%, #730dcb 82%, #ea07fe 132%);
+    border: 1px solid rgba(61, 208, 255, 0.22);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 22px 54px rgba(115, 13, 203, 0.22);
+}
+
+body.theme-lab-designer .sector-nav {
+    background: #000000;
+    border-bottom-color: rgba(61, 208, 255, 0.28);
+}
+
+body.theme-lab-designer .sector-nav a,
+body.theme-lab-designer .report-tabs a {
+    color: #ffffff;
 }
 
 body.theme-lab-designer .sector-nav a.active,
 body.theme-lab-designer .sector-nav a:hover,
 body.theme-lab-designer .report-tabs a.active,
 body.theme-lab-designer .report-tabs a:hover {
-    background: rgba(61, 208, 255, 0.18);
+    background: #3dd0ff;
     border-color: #3dd0ff;
-    color: #213172;
+    color: #000000;
+}
+
+body.theme-lab-designer .summary-card strong,
+body.theme-lab-designer .report-kicker,
+body.theme-lab-designer .admin-sector-card h3 {
+    color: #3dd0ff;
+}
+
+body.theme-lab-designer .module-link {
+    border-left: 4px solid #3dd0ff;
+}
+
+body.theme-lab-designer .module-link:hover {
+    border-color: #ea07fe;
+    box-shadow: 0 20px 48px rgba(234, 7, 254, 0.22);
+}
+
+body.theme-lab-designer .notice.success {
+    background: rgba(61, 208, 255, 0.18);
+    color: #3dd0ff;
 }
 
 .action-cell {
