@@ -836,18 +836,19 @@ body.theme-lab-designer .admin-sector-card {
 
 body.theme-lab-designer .report-document {
     background: #ffffff;
-    color: #172033;
+    color: #000000;
 }
 
 body.theme-lab-designer .report-document h2,
 body.theme-lab-designer .report-document h3,
-body.theme-lab-designer .report-document table {
-    color: #172033;
+body.theme-lab-designer .report-document table,
+body.theme-lab-designer .report-document * {
+    color: #000000;
 }
 
 body.theme-lab-designer .report-document .report-kicker,
 body.theme-lab-designer .report-document .report-summary strong {
-    color: #213172;
+    color: #000000;
 }
 
 body.theme-lab-designer .report-document .report-meta,

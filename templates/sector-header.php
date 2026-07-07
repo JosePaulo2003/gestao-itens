@@ -70,27 +70,25 @@ $initial = strtoupper(substr((string) $user['name'], 0, 1));
     body.theme-lab-designer .report-document {
         background: #ffffff !important;
         border-color: #d9e2ef !important;
-        color: #172033 !important;
+        color: #000000 !important;
         box-shadow: 0 18px 50px rgba(23, 32, 51, 0.08) !important;
     }
 
     body.theme-lab-designer .report-document h2,
     body.theme-lab-designer .report-document h3,
     body.theme-lab-designer .report-document table,
-    body.theme-lab-designer .report-document td {
-        color: #172033 !important;
-    }
-
     body.theme-lab-designer .report-document th,
-    body.theme-lab-designer .report-document .report-meta,
-    body.theme-lab-designer .report-document .report-signature p,
-    body.theme-lab-designer .report-document .empty {
-        color: #667085 !important;
+    body.theme-lab-designer .report-document span,
+    body.theme-lab-designer .report-document strong,
+    body.theme-lab-designer .report-document p,
+    body.theme-lab-designer .report-document div,
+    body.theme-lab-designer .report-document td {
+        color: #000000 !important;
     }
 
     body.theme-lab-designer .report-document .report-kicker,
     body.theme-lab-designer .report-document .report-summary strong {
-        color: #213172 !important;
+        color: #000000 !important;
     }
 
     body.theme-lab-designer .report-document .report-meta,
