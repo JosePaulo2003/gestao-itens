@@ -1,0 +1,25 @@
+# Sistema operacional e editor.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Arquivos internos do Codex/agents locais.
+.agents/
+.codex/
+
+# Dependencias e caches.
+vendor/
+node_modules/
+*.log
+
+# Ambiente local.
+.env
+
+# Uploads dos usuarios: manter somente protecoes e pastas versionaveis.
+uploads/items/*
+uploads/users/*
+!uploads/items/.gitkeep
+!uploads/users/.gitkeep
+!uploads/items/.htaccess
+!uploads/users/.htaccess
