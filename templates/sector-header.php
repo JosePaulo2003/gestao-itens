@@ -60,12 +60,42 @@ $initial = strtoupper(substr((string) $user['name'], 0, 1));
     body.theme-lab-designer .panel,
     body.theme-lab-designer .module-card,
     body.theme-lab-designer .summary-card,
-    body.theme-lab-designer .report-document,
     body.theme-lab-designer .admin-sector-card {
         background: linear-gradient(145deg, rgba(33, 49, 114, 0.96), rgba(0, 0, 0, 0.92)) !important;
         border-color: rgba(61, 208, 255, 0.34) !important;
         color: #ffffff !important;
         box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(234, 7, 254, 0.08) !important;
+    }
+
+    body.theme-lab-designer .report-document {
+        background: #ffffff !important;
+        border-color: #d9e2ef !important;
+        color: #172033 !important;
+        box-shadow: 0 18px 50px rgba(23, 32, 51, 0.08) !important;
+    }
+
+    body.theme-lab-designer .report-document h2,
+    body.theme-lab-designer .report-document h3,
+    body.theme-lab-designer .report-document table,
+    body.theme-lab-designer .report-document td {
+        color: #172033 !important;
+    }
+
+    body.theme-lab-designer .report-document th,
+    body.theme-lab-designer .report-document .report-meta,
+    body.theme-lab-designer .report-document .report-signature p,
+    body.theme-lab-designer .report-document .empty {
+        color: #667085 !important;
+    }
+
+    body.theme-lab-designer .report-document .report-kicker,
+    body.theme-lab-designer .report-document .report-summary strong {
+        color: #213172 !important;
+    }
+
+    body.theme-lab-designer .report-document .report-meta,
+    body.theme-lab-designer .report-document .report-summary div {
+        background: rgba(61, 208, 255, 0.12) !important;
     }
 
     body.theme-lab-designer .sector-hero {

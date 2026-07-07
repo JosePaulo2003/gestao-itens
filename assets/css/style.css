@@ -826,13 +826,33 @@ body.theme-lab-maker .stock-form input {
 body.theme-lab-designer .panel,
 body.theme-lab-designer .module-card,
 body.theme-lab-designer .summary-card,
-body.theme-lab-designer .report-document,
 body.theme-lab-designer .admin-sector-card {
     background:
         linear-gradient(145deg, rgba(33, 49, 114, 0.94), rgba(0, 0, 0, 0.92));
     border-color: rgba(61, 208, 255, 0.32);
     color: #ffffff;
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(234, 7, 254, 0.06);
+}
+
+body.theme-lab-designer .report-document {
+    background: #ffffff;
+    color: #172033;
+}
+
+body.theme-lab-designer .report-document h2,
+body.theme-lab-designer .report-document h3,
+body.theme-lab-designer .report-document table {
+    color: #172033;
+}
+
+body.theme-lab-designer .report-document .report-kicker,
+body.theme-lab-designer .report-document .report-summary strong {
+    color: #213172;
+}
+
+body.theme-lab-designer .report-document .report-meta,
+body.theme-lab-designer .report-document .report-summary div {
+    background: rgba(61, 208, 255, 0.12);
 }
 
 body.theme-lab-designer .form-grid input,
