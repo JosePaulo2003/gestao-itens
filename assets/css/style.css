@@ -875,12 +875,46 @@ td.action-cell {
     width: min(1180px, calc(100% - 32px));
 }
 
+.report-toolbar,
 .report-actions {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+    gap: 12px;
     margin-bottom: 16px;
 }
 
+.report-toolbar {
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.report-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.report-tabs a {
+    display: inline-grid;
+    min-height: 38px;
+    place-items: center;
+    padding: 0 14px;
+    border: 1px solid var(--theme-border);
+    border-radius: 999px;
+    background: var(--theme-panel);
+    color: var(--theme-primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.report-tabs a:hover,
+.report-tabs a.active {
+    background: var(--theme-soft);
+    border-color: var(--theme-primary);
+}
+
+.report-toolbar button,
 .report-actions button {
     min-height: 42px;
     padding: 0 18px;
@@ -1001,6 +1035,323 @@ td.action-cell {
     margin-top: 8px;
     color: var(--theme-muted);
     text-align: center;
+}
+
+.registry-document {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: min(1180px, 100%);
+    min-height: 540px;
+    padding: 28px;
+    border: 1px solid #111;
+    background: #fff;
+    color: #111;
+    box-shadow: 0 18px 50px var(--theme-shadow);
+}
+
+.registry-slip {
+    display: grid;
+    grid-template-rows: 230px 1fr;
+    min-width: 0;
+    border-left: 1px solid #111;
+}
+
+.registry-slip:first-child {
+    border-left: 0;
+}
+
+.registry-top {
+    display: grid;
+    grid-template-columns: 62% 38%;
+    border-bottom: 1px solid #111;
+}
+
+.registry-received,
+.registry-destination,
+.registry-body {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+.registry-received {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 18px;
+    padding: 14px 10px;
+    border-left: 1px solid #111;
+}
+
+.registry-received strong {
+    font-size: 1.3rem;
+}
+
+.registry-received span {
+    font-size: 0.72rem;
+}
+
+.registry-destination {
+    padding: 14px 10px;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.registry-body {
+    display: grid;
+    align-content: stretch;
+    gap: 10px;
+    padding: 16px 8px;
+    font-size: 0.95rem;
+}
+
+.registry-body strong {
+    align-self: center;
+    justify-self: center;
+}
+
+.registry-body span {
+    font-weight: 700;
+}
+
+.registry-body p {
+    margin: 0;
+    letter-spacing: 0.08em;
+}
+
+.registry-font {
+    position: absolute;
+    right: -58px;
+    bottom: 36px;
+    color: #111;
+    font-size: 1.4rem;
+    transform: rotate(90deg);
+}
+
+.caution-document {
+    position: relative;
+    overflow: hidden;
+    width: min(860px, 100%);
+    min-height: 1218px;
+    margin: 0 auto;
+    padding: 42px 72px 54px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #111;
+    box-shadow: 0 18px 50px var(--theme-shadow);
+}
+
+.caution-corner {
+    position: absolute;
+    pointer-events: none;
+}
+
+.caution-corner-top-left {
+    top: -58px;
+    left: 56px;
+    width: 150px;
+    height: 150px;
+    border: 2px solid #1ca64a;
+    border-radius: 0 0 24px 24px;
+    transform: rotate(45deg);
+}
+
+.caution-corner-top-right {
+    top: -70px;
+    right: -30px;
+    width: 180px;
+    height: 180px;
+    border: 2px solid #f4e600;
+    border-radius: 0 0 28px 28px;
+    transform: rotate(45deg);
+}
+
+.caution-corner-bottom-left {
+    left: -80px;
+    bottom: 120px;
+    width: 250px;
+    height: 250px;
+    background: rgba(31, 60, 111, 0.08);
+    transform: rotate(45deg);
+}
+
+.caution-corner-bottom-right {
+    right: -42px;
+    bottom: -54px;
+    width: 118px;
+    height: 118px;
+    background: #1ca64a;
+    border-radius: 18px;
+    transform: rotate(45deg);
+}
+
+.caution-header {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.caution-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.caution-seal {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    border: 3px solid #f4e600;
+    border-radius: 50%;
+    background: #1ca64a;
+    color: #fff;
+    font-weight: 800;
+}
+
+.caution-brand strong {
+    display: block;
+    color: #1ca64a;
+    font-size: 2.6rem;
+    line-height: 0.9;
+}
+
+.caution-brand small {
+    color: #1d355c;
+    font-weight: 800;
+}
+
+.caution-colorbar {
+    width: 260px;
+    height: 8px;
+    margin: 4px 0 28px;
+    background: linear-gradient(90deg, #1d355c 0 34%, #1ca64a 34% 67%, #f4e600 67%);
+}
+
+.caution-header h2 {
+    margin-bottom: 22px;
+    font-size: 1.08rem;
+}
+
+.caution-header h3 {
+    font-size: 1rem;
+}
+
+.caution-box,
+.caution-observation {
+    position: relative;
+    border: 1px solid #111;
+}
+
+.caution-box-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 10px;
+    border-bottom: 1px solid #111;
+    font-size: 0.92rem;
+}
+
+.caution-field-row {
+    display: flex;
+    gap: 44px;
+    padding: 12px 10px 0;
+}
+
+.caution-field-row strong {
+    text-decoration: underline;
+}
+
+.caution-large-line {
+    min-height: 62px;
+}
+
+.caution-observation {
+    min-height: 44px;
+    padding: 14px 10px;
+    border-top: 0;
+    font-size: 0.92rem;
+}
+
+.caution-table {
+    position: relative;
+    width: 100%;
+    margin-top: 24px;
+    border-collapse: collapse;
+    color: #111;
+    font-size: 0.9rem;
+}
+
+.caution-table th {
+    padding: 4px 6px;
+    border: 1px solid #111;
+    background: #caffc9;
+    color: #111;
+    text-align: center;
+    text-transform: none;
+}
+
+.caution-table td {
+    height: 58px;
+    padding: 8px 10px;
+    border: 1px solid #111;
+    color: #111;
+}
+
+.caution-table td:nth-child(1),
+.caution-table td:nth-child(2),
+.caution-table td:nth-child(3) {
+    text-align: center;
+}
+
+.caution-authorization {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    margin-top: 24px;
+    font-size: 1rem;
+}
+
+.caution-signatures {
+    display: grid;
+    gap: 16px;
+    margin-top: 106px;
+    font-size: 1rem;
+}
+
+.caution-signatures p {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0;
+}
+
+.caution-footer {
+    position: absolute;
+    right: 72px;
+    bottom: 44px;
+    left: 72px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 18px;
+    align-items: end;
+    color: #1d355c;
+    font-size: 0.78rem;
+}
+
+.caution-footer div {
+    display: grid;
+    gap: 3px;
+}
+
+.caution-footer strong {
+    padding-left: 18px;
+    border-left: 1px solid #b6c3d1;
+    font-size: 1.2rem;
+    line-height: 1.05;
 }
 
 .admin-hero {
@@ -1153,6 +1504,32 @@ td.action-cell {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .report-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .report-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+    }
+
+    .caution-document {
+        padding: 32px 24px;
+        min-height: auto;
+    }
+
+    .caution-footer {
+        position: static;
+        grid-template-columns: 1fr;
+        margin-top: 48px;
+    }
+
+    .registry-document {
+        overflow-x: auto;
+    }
+
     .login-panel {
         width: 100%;
     }
@@ -1164,12 +1541,23 @@ td.action-cell {
 
 @media print {
     /* Impressao limpa do relatorio, sem menu nem botoes. */
+    @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
+
+    @page registry-page {
+        size: A4 landscape;
+        margin: 8mm;
+    }
+
     body {
         background: #fff;
     }
 
     .sector-topbar,
     .sector-nav,
+    .report-toolbar,
     .report-actions {
         display: none;
     }
@@ -1193,5 +1581,38 @@ td.action-cell {
 
     .report-table {
         font-size: 0.86rem;
+    }
+
+    .registry-document {
+        page: registry-page;
+        width: 100%;
+        min-height: 180mm;
+        padding: 0;
+        border: 1px solid #111;
+        box-shadow: none;
+    }
+
+    .registry-font {
+        right: -36px;
+    }
+
+    .caution-document {
+        width: 100%;
+        min-height: 277mm;
+        padding: 20mm 16mm 14mm;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .caution-footer {
+        right: 16mm;
+        bottom: 14mm;
+        left: 16mm;
+    }
+
+    .report-document,
+    .registry-document,
+    .caution-document {
+        break-after: avoid;
     }
 }
