@@ -1284,6 +1284,12 @@ td.action-cell {
     content: "\00a0";
 }
 
+.caution-date-field {
+    min-width: 70px;
+    text-align: center;
+    white-space: pre;
+}
+
 .caution-box-title {
     display: flex;
     justify-content: space-between;
