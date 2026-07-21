@@ -37,12 +37,13 @@ const ROLES = [
     'estagiario' => 'Estagiario',
     'admin' => 'Admin',
     'super_admin' => 'Admin Maximo',
+    'solicitante' => 'Solicitante',
 ];
 
 function find_user_by_email(string $email): ?array
 {
     // Busca todos os dados necessarios para validar login e montar a sessao.
-    $stmt = db()->prepare('SELECT id, name, email, password_hash, sector, role, photo_path FROM users WHERE email = :email LIMIT 1');
+    $stmt = db()->prepare('SELECT id, name, email, password_hash, sector, role, requester_sector_id, loan_blocked_until, loan_infraction_count, photo_path FROM users WHERE email = :email LIMIT 1');
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
 
@@ -52,7 +53,7 @@ function find_user_by_email(string $email): ?array
 function find_user_by_id(int $id): ?array
 {
     // Usado para atualizar sessoes antigas que nao tenham campos novos.
-    $stmt = db()->prepare('SELECT id, name, email, sector, role, photo_path FROM users WHERE id = :id LIMIT 1');
+    $stmt = db()->prepare('SELECT id, name, email, sector, role, requester_sector_id, loan_blocked_until, loan_infraction_count, photo_path FROM users WHERE id = :id LIMIT 1');
     $stmt->execute(['id' => $id]);
     $user = $stmt->fetch();
 
@@ -71,6 +72,9 @@ function login_user(array $user): void
         'email' => $user['email'],
         'sector' => $user['sector'],
         'role' => $user['role'],
+        'requester_sector_id' => $user['requester_sector_id'] ?? null,
+        'loan_blocked_until' => $user['loan_blocked_until'] ?? null,
+        'loan_infraction_count' => $user['loan_infraction_count'] ?? 0,
         'photo_path' => $user['photo_path'] ?? null,
     ];
 }
@@ -84,7 +88,7 @@ function current_user(): ?array
     }
 
     // Se o sistema ganhou campos novos depois do login, atualiza a sessao.
-    if ((!isset($user['role']) || !array_key_exists('photo_path', $user)) && isset($user['id'])) {
+    if ((!isset($user['role']) || !array_key_exists('photo_path', $user) || !array_key_exists('requester_sector_id', $user) || !array_key_exists('loan_blocked_until', $user)) && isset($user['id'])) {
         $freshUser = find_user_by_id((int) $user['id']);
 
         if ($freshUser) {
@@ -124,6 +128,11 @@ function sector_url(string $sector): string
 
 function redirect_to_user_sector(array $user): void
 {
+    if (is_requester($user)) {
+        header('Location: ' . url_for('/setores/solicitacoes.php'));
+        exit;
+    }
+
     if (is_super_admin($user)) {
         header('Location: ' . url_for('/sair-admin-maximo.php'));
         exit;
@@ -136,6 +145,10 @@ function redirect_to_user_sector(array $user): void
 function require_sector(string $sector): array
 {
     $user = require_login();
+
+    if (is_requester($user)) {
+        redirect_to_user_sector($user);
+    }
 
     if (is_super_admin($user)) {
         header('Location: ' . url_for('/sair-admin-maximo.php'));
@@ -160,6 +173,16 @@ function is_super_admin(array $user): bool
     return ($user['role'] ?? '') === 'super_admin';
 }
 
+function is_requester(array $user): bool
+{
+    return ($user['role'] ?? '') === 'solicitante';
+}
+
+function is_almoxarifado_manager(array $user): bool
+{
+    return ($user['sector'] ?? '') === 'almoxarifado' && is_admin($user);
+}
+
 function is_lab_sector(string $sector): bool
 {
     return in_array($sector, ['lab-designer', 'lab-maker'], true);
@@ -167,6 +190,10 @@ function is_lab_sector(string $sector): bool
 
 function can_manage_items(array $user): bool
 {
+    if (is_requester($user)) {
+        return false;
+    }
+
     // Nos laboratorios, bolsistas apenas consultam; admin segue gerenciando.
     if (is_lab_sector($user['sector']) && !is_admin($user)) {
         return false;
@@ -179,6 +206,10 @@ function role_label(string $role, string $sector): string
 {
     if ($role === 'super_admin') {
         return 'Admin Maximo';
+    }
+
+    if ($role === 'solicitante') {
+        return 'Solicitante';
     }
 
     // No Almoxarifado o perfil com permissao de admin deve aparecer como Gestor.

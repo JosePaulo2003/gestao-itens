@@ -668,6 +668,17 @@ p {
     font-weight: 700;
 }
 
+.form-grid .checkbox-label {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+}
+
+.form-grid .checkbox-label input {
+    width: auto;
+    min-height: auto;
+    margin-top: 3px;
+}
+
 .field-hint {
     color: var(--theme-muted);
     font-size: 0.82rem;
@@ -716,6 +727,29 @@ p {
 .form-grid button:hover,
 .stock-form button:hover {
     background: var(--theme-secondary);
+}
+
+.item-document-details {
+    display: grid;
+    gap: 4px;
+    margin: 8px 0 0;
+    color: var(--theme-muted);
+    font-size: 0.82rem;
+}
+
+.item-document-details div {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.item-document-details dt,
+.item-document-details dd {
+    margin: 0;
+}
+
+.item-document-details dt {
+    font-weight: 800;
 }
 
 .table-wrap {
@@ -767,6 +801,26 @@ th {
     color: #991b1b;
 }
 
+.stock-badge.solicitada {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stock-badge.retirada {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.stock-badge.devolvida {
+    background: var(--theme-soft);
+    color: var(--theme-primary);
+}
+
+.stock-badge.cancelada {
+    background: #e5e7eb;
+    color: #374151;
+}
+
 .item-photo {
     display: block;
     width: 72px;
@@ -803,9 +857,19 @@ th {
     color: var(--danger-text);
 }
 
+.danger-text {
+    color: var(--danger-text) !important;
+}
+
 .empty,
 .muted {
     color: var(--theme-muted);
+}
+
+td .muted {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.78rem;
 }
 
 body.theme-lab-maker .panel,
@@ -921,6 +985,12 @@ td.action-cell {
     gap: 8px;
 }
 
+td.loan-actions {
+    align-items: stretch;
+    flex-direction: column;
+    min-width: 260px;
+}
+
 .inline-form {
     display: inline-flex;
     margin: 0;
@@ -929,6 +999,28 @@ td.action-cell {
 .inline-form button {
     cursor: pointer;
     font: inherit;
+}
+
+.loan-renew-form,
+.loan-infraction-form {
+    gap: 6px;
+}
+
+.loan-renew-form input,
+.loan-infraction-form input {
+    min-height: 36px;
+    padding: 8px 10px;
+    border: 1px solid var(--theme-border);
+    border-radius: 6px;
+    font: inherit;
+}
+
+.loan-infraction-form {
+    flex-wrap: wrap;
+}
+
+.loan-infraction-form input {
+    min-width: 190px;
 }
 
 .danger-action {
@@ -1122,8 +1214,9 @@ td.action-cell {
 
 .report-signature {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(260px, 520px);
     gap: 48px;
+    justify-content: center;
     padding-top: 42px;
     margin-top: 34px;
 }
@@ -1514,6 +1607,357 @@ td.action-cell {
     line-height: 1.05;
 }
 
+.editable-template-document {
+    background: #fff;
+    color: #111;
+    box-shadow: 0 18px 50px var(--theme-shadow);
+}
+
+.editable-template-document .editable-field {
+    display: inline-block;
+    min-width: 72px;
+    min-height: 1.25em;
+    border-bottom: 1px dotted #111;
+    color: #111;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.editable-template-document .editable-field:empty::before {
+    content: "\00a0";
+}
+
+.material-request-document {
+    position: relative;
+    width: min(1120px, 100%);
+    aspect-ratio: 297 / 210;
+    min-height: 790px;
+    margin: 0 auto;
+    padding: 34px 38px 28px;
+    border: 1px solid #d6d6d6;
+    overflow: hidden;
+}
+
+.material-request-header {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    min-height: 180px;
+    align-items: start;
+    gap: 36px;
+}
+
+.request-black-corner {
+    position: absolute;
+    top: -8px;
+    left: -28px;
+    width: 420px;
+    height: 205px;
+    background: #111;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.material-request-header > div:not(.request-black-corner) {
+    justify-self: center;
+    padding-top: 90px;
+    text-align: center;
+}
+
+.material-request-header h2 {
+    margin: 0 0 18px;
+    color: #111;
+    font-size: 1.2rem;
+    text-decoration: underline;
+}
+
+.material-request-header p {
+    margin: 0;
+    color: #111;
+    font-weight: 800;
+}
+
+.request-sector-field {
+    min-width: 270px;
+}
+
+.uea-mark {
+    padding: 20px 26px 0 0;
+    color: #111;
+    font-size: 3.6rem;
+    font-weight: 400;
+}
+
+.material-request-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #111;
+    font-size: 0.92rem;
+}
+
+.material-request-table th {
+    height: 32px;
+    border: 1px solid #111;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.material-request-table td {
+    height: 31px;
+    padding: 2px 5px;
+    border: 1px solid #111;
+}
+
+.material-description-input {
+    display: block;
+    width: 100%;
+    min-height: 22px;
+    padding: 0 2px;
+    border: 0;
+    border-bottom: 1px dotted #111;
+    background: transparent;
+    color: #111;
+    font: inherit;
+    outline: 0;
+}
+
+.document-autocomplete-field {
+    display: block;
+    width: 100%;
+    min-height: 1.45em;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px dotted #111;
+    background: transparent;
+    color: #111;
+    font: inherit;
+    outline: 0;
+}
+
+.material-request-table th:nth-child(1),
+.material-request-table td:nth-child(1),
+.material-request-table th:nth-child(5),
+.material-request-table td:nth-child(5) {
+    width: 18%;
+}
+
+.material-request-table th:nth-child(2),
+.material-request-table td:nth-child(2),
+.material-request-table th:nth-child(4),
+.material-request-table td:nth-child(4),
+.material-request-table th:nth-child(6),
+.material-request-table td:nth-child(6) {
+    width: 10%;
+}
+
+.material-request-footer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 28px;
+    align-items: end;
+    margin-top: 18px;
+    color: #111;
+}
+
+.request-signature-field {
+    min-width: 330px;
+}
+
+.request-date-field {
+    min-width: 96px;
+    text-align: center;
+}
+
+.loan-term-document {
+    width: min(820px, 100%);
+    min-height: 1120px;
+    margin: 0 auto;
+    padding: 24px 18px 26px;
+    border: 1px solid #d6d6d6;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.loan-term-header {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.loan-term-logo {
+    display: block;
+    width: 96px;
+    height: auto;
+    margin-bottom: 4px;
+}
+
+.loan-term-header strong,
+.loan-term-header span {
+    display: block;
+    color: #111;
+    font-size: 1.1rem;
+}
+
+.loan-term-document h2,
+.loan-term-document h3 {
+    margin: 0;
+    color: #111;
+    text-align: center;
+}
+
+.loan-term-document h2 {
+    padding: 26px 10px;
+    border: 1px solid #111;
+    background: #d6d6d6;
+    font-size: 1.2rem;
+}
+
+.loan-term-grid {
+    display: grid;
+    border-right: 1px solid #111;
+    border-bottom: 1px solid #111;
+}
+
+.loan-term-grid > div {
+    display: grid;
+    align-content: start;
+    min-height: 48px;
+    padding: 5px 8px;
+    border-left: 1px solid #111;
+    border-top: 1px solid #111;
+}
+
+.loan-term-grid strong,
+.loan-other-materials > strong,
+.loan-observations > strong {
+    color: #111;
+    font-size: 0.88rem;
+}
+
+.borrower-grid {
+    grid-template-columns: 4fr 1fr;
+}
+
+.equipment-grid {
+    grid-template-columns: 4fr 1fr 1.3fr;
+}
+
+.loan-equipment {
+    margin-top: 18px;
+    border: 1px solid #111;
+    border-bottom: 0;
+}
+
+.loan-equipment h3,
+.loan-text-block h3 {
+    padding: 5px 8px;
+    background: #eeeeee;
+    border-bottom: 1px solid #111;
+    font-size: 1rem;
+    text-align: left;
+}
+
+.loan-equipment .loan-term-grid {
+    border-right: 0;
+}
+
+.loan-equipment .loan-term-grid > div {
+    min-height: 54px;
+    border-top: 0;
+}
+
+.loan-equipment .loan-term-grid > div:first-child {
+    border-left: 0;
+}
+
+.loan-other-materials {
+    display: grid;
+    grid-template-columns: auto 150px 1fr;
+    gap: 10px 20px;
+    align-items: center;
+    min-height: 78px;
+    padding: 6px 8px;
+    border: 1px solid #111;
+    border-top: 0;
+}
+
+.loan-checkboxes {
+    display: grid;
+    grid-template-columns: auto 28px;
+    gap: 6px 16px;
+    align-items: center;
+}
+
+.checkbox-field {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #111;
+}
+
+.loan-other-materials .editable-field {
+    display: block;
+    width: 100%;
+    min-height: 54px;
+}
+
+.loan-text-block {
+    border: 1px solid #111;
+    border-top: 0;
+}
+
+.loan-text-block h3 {
+    text-align: center;
+}
+
+.loan-text-block p {
+    margin: 8px 28px;
+    color: #111;
+    font-size: 0.91rem;
+    line-height: 1.18;
+    text-align: justify;
+}
+
+.loan-text-block ul {
+    margin: 8px 54px 14px;
+    color: #111;
+    font-size: 0.91rem;
+    line-height: 1.2;
+}
+
+.loan-signature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-right: 1px solid #111;
+    border-bottom: 1px solid #111;
+}
+
+.loan-signature-grid > div {
+    display: grid;
+    gap: 28px;
+    min-height: 88px;
+    padding: 8px 12px;
+    border-left: 1px solid #111;
+    text-align: center;
+}
+
+.signature-line {
+    width: 100%;
+}
+
+.loan-observations {
+    display: grid;
+    gap: 8px;
+    min-height: 74px;
+    padding: 8px;
+    border: 1px solid #111;
+    border-top: 0;
+}
+
+.loan-observations .editable-field {
+    width: 100%;
+}
+
 .admin-hero {
     background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
 }
@@ -1680,6 +2124,21 @@ td.action-cell {
         min-height: auto;
     }
 
+    .material-request-document,
+    .loan-term-document {
+        min-height: auto;
+        padding: 24px;
+    }
+
+    .material-request-header,
+    .material-request-footer,
+    .borrower-grid,
+    .equipment-grid,
+    .loan-other-materials,
+    .loan-signature-grid {
+        grid-template-columns: 1fr;
+    }
+
     .caution-footer {
         grid-template-columns: 1fr;
         margin-top: 36px;
@@ -1717,6 +2176,16 @@ td.action-cell {
     @page registry-page {
         size: A4 portrait;
         margin: 10mm;
+    }
+
+    @page material-request-page {
+        size: A4 landscape;
+        margin: 8mm;
+    }
+
+    @page loan-term-page {
+        size: A4 portrait;
+        margin: 8mm;
     }
 
     body {
@@ -1774,6 +2243,24 @@ td.action-cell {
         box-shadow: none;
     }
 
+    .material-request-document {
+        page: material-request-page;
+        width: 100%;
+        min-height: 194mm;
+        padding: 6mm 7mm;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .loan-term-document {
+        page: loan-term-page;
+        width: 100%;
+        min-height: 281mm;
+        padding: 4mm 4mm 5mm;
+        border: 0;
+        box-shadow: none;
+    }
+
     .caution-footer {
         position: relative;
         right: auto;
@@ -1785,7 +2272,9 @@ td.action-cell {
 
     .report-document,
     .registry-page-document,
-    .caution-document {
+    .caution-document,
+    .material-request-document,
+    .loan-term-document {
         break-after: avoid;
     }
 

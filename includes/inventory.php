@@ -18,3 +18,4 @@ require_once __DIR__ . '/uploads.php';
 require_once __DIR__ . '/items.php';
 require_once __DIR__ . '/users.php';
 require_once __DIR__ . '/reports.php';
+require_once __DIR__ . '/requests.php';

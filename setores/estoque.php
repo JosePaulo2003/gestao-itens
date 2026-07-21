@@ -4,6 +4,11 @@ require_once __DIR__ . '/../includes/inventory.php';
 
 // Estoque e uma pagina protegida para qualquer perfil logado.
 $user = require_login();
+
+if (is_requester($user)) {
+    redirect_to_user_sector($user);
+}
+
 $sectorName = SECTORS[$user['sector']];
 $activePage = 'estoque';
 $message = '';
@@ -83,7 +88,22 @@ $items = list_items($user['sector']);
                                         <?php endif; ?>
                                     </td>
                                     <td><?= e($item['name']) ?></td>
-                                    <td><?= e((string) $item['description']) ?></td>
+                                    <td>
+                                        <?= e((string) $item['description']) ?>
+                                        <?php if ($user['sector'] === 'almoxarifado' && (!empty($item['brand_model']) || !empty($item['patrimony_number']) || !empty($item['serial_number']))): ?>
+                                            <dl class="item-document-details">
+                                                <?php if (!empty($item['brand_model'])): ?>
+                                                    <div><dt>Marca/modelo</dt><dd><?= e((string) $item['brand_model']) ?></dd></div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($item['patrimony_number'])): ?>
+                                                    <div><dt>Patrimonio</dt><dd><?= e((string) $item['patrimony_number']) ?></dd></div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($item['serial_number'])): ?>
+                                                    <div><dt>N. serie</dt><dd><?= e((string) $item['serial_number']) ?></dd></div>
+                                                <?php endif; ?>
+                                            </dl>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= (int) $item['quantity'] ?></td>
                                     <td>
                                         <span class="stock-badge <?= (int) $item['in_stock'] > 0 ? 'in' : 'out' ?>">

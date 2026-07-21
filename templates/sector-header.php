@@ -143,14 +143,22 @@ $initial = strtoupper(substr((string) $user['name'], 0, 1));
 
 <?php if (!is_super_admin($user)): ?>
 <nav class="sector-nav" aria-label="Navegacao do setor">
+    <?php if (is_requester($user)): ?>
+        <a class="<?= $activePage === 'solicitacoes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">Solicitacoes</a>
+    <?php else: ?>
         <a class="<?= $activePage === 'home' ? 'active' : '' ?>" href="<?= e($homeUrl) ?>">Inicio</a>
         <?php if (can_manage_items($user)): ?>
             <a class="<?= $activePage === 'cadastrar-item' ? 'active' : '' ?>" href="<?= e(url_for('/setores/cadastrar-item.php')) ?>">Cadastrar item</a>
         <?php endif; ?>
         <a class="<?= $activePage === 'estoque' ? 'active' : '' ?>" href="<?= e(url_for('/setores/estoque.php')) ?>">Estoque</a>
         <a class="<?= $activePage === 'relatorio' ? 'active' : '' ?>" href="<?= e(url_for('/setores/relatorio.php')) ?>">Relatorio</a>
+        <?php if (is_almoxarifado_manager($user)): ?>
+            <a class="<?= $activePage === 'setores-solicitantes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/setores-solicitantes.php')) ?>">Setores solicitantes</a>
+            <a class="<?= $activePage === 'solicitacoes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">Solicitacoes</a>
+        <?php endif; ?>
         <?php if (is_admin($user)): ?>
             <a class="<?= $activePage === 'usuarios' ? 'active' : '' ?>" href="<?= e(url_for('/setores/usuarios.php')) ?>">Usuarios</a>
         <?php endif; ?>
+    <?php endif; ?>
 </nav>
 <?php endif; ?>

@@ -12,7 +12,7 @@ declare(strict_types=1);
 function list_items(string $sector): array
 {
     $stmt = db()->prepare(
-        'SELECT id, name, description, quantity, in_stock, image_path, updated_at
+        'SELECT id, name, description, brand_model, patrimony_number, serial_number, other_materials, quantity, in_stock, image_path, updated_at
          FROM items
          WHERE sector = :sector
          ORDER BY name'
@@ -22,18 +22,32 @@ function list_items(string $sector): array
     return $stmt->fetchAll();
 }
 
-function create_item(string $sector, string $name, string $description, int $quantity, ?string $imagePath = null, ?int $userId = null): void
-{
+function create_item(
+    string $sector,
+    string $name,
+    string $description,
+    int $quantity,
+    ?string $imagePath = null,
+    ?int $userId = null,
+    string $brandModel = '',
+    string $patrimonyNumber = '',
+    string $serialNumber = '',
+    string $otherMaterials = ''
+): void {
     $pdo = db();
     $stmt = db()->prepare(
-        'INSERT INTO items (sector, name, description, quantity, in_stock, image_path)
-         VALUES (:sector, :name, :description, :quantity, :in_stock, :image_path)'
+        'INSERT INTO items (sector, name, description, brand_model, patrimony_number, serial_number, other_materials, quantity, in_stock, image_path)
+         VALUES (:sector, :name, :description, :brand_model, :patrimony_number, :serial_number, :other_materials, :quantity, :in_stock, :image_path)'
     );
 
     $stmt->execute([
         'sector' => $sector,
         'name' => $name,
         'description' => $description,
+        'brand_model' => $brandModel !== '' ? $brandModel : null,
+        'patrimony_number' => $patrimonyNumber !== '' ? $patrimonyNumber : null,
+        'serial_number' => $serialNumber !== '' ? $serialNumber : null,
+        'other_materials' => $otherMaterials !== '' ? $otherMaterials : null,
         'quantity' => $quantity,
         // Se a quantidade for maior que zero, o item ja entra como disponivel.
         'in_stock' => $quantity > 0 ? 1 : 0,

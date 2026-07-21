@@ -13,6 +13,7 @@ if (!is_admin($user)) {
 $sectorName = SECTORS[$user['sector']];
 $managerLabel = role_label('admin', $user['sector']);
 $memberLabel = role_label('estagiario', $user['sector']);
+$requesterSectors = is_almoxarifado_manager($user) ? list_requester_sectors(true) : [];
 $activePage = 'usuarios';
 $message = '';
 $error = '';
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim((string) ($_POST['email'] ?? ''));
         $password = (string) ($_POST['password'] ?? '');
         $role = (string) ($_POST['role'] ?? 'estagiario');
+        $requesterSectorId = (int) ($_POST['requester_sector_id'] ?? 0);
 
         // Nome, e-mail e senha sao obrigatorios para permitir login.
         if ($name === '' || $email === '' || $password === '') {
@@ -42,7 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $photoPath = save_user_photo($_FILES['photo'] ?? [], $user['sector']);
 
         // O novo usuario sempre pertence ao mesmo setor do admin logado.
-        create_user_account($name, $email, $password, $user['sector'], $role, $photoPath);
+        create_user_account(
+            $name,
+            $email,
+            $password,
+            $user['sector'],
+            $role,
+            $photoPath,
+            $requesterSectorId > 0 ? $requesterSectorId : null
+        );
         $message = 'Usuario cadastrado com sucesso.';
         }
     } catch (Throwable $exception) {
@@ -100,8 +110,24 @@ $sectorUsers = list_users_by_sector($user['sector']);
                     <select name="role" required>
                         <option value="estagiario"><?= e($memberLabel) ?></option>
                         <option value="admin"><?= e($managerLabel) ?></option>
+                        <?php if (is_almoxarifado_manager($user)): ?>
+                            <option value="solicitante">Solicitante</option>
+                        <?php endif; ?>
                     </select>
                 </label>
+
+                <?php if (is_almoxarifado_manager($user)): ?>
+                    <label>
+                        Setor solicitante
+                        <select name="requester_sector_id">
+                            <option value="">Somente para perfil Solicitante</option>
+                            <?php foreach ($requesterSectors as $requesterSector): ?>
+                                <option value="<?= (int) $requesterSector['id'] ?>"><?= e($requesterSector['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <span class="field-hint">Cadastre o setor solicitante antes de criar o usuario.</span>
+                    </label>
+                <?php endif; ?>
 
                 <label class="full">
                     Foto do usuario
@@ -126,6 +152,9 @@ $sectorUsers = list_users_by_sector($user['sector']);
                                 <th>Nome</th>
                                 <th>E-mail</th>
                                 <th>Perfil</th>
+                                <?php if (is_almoxarifado_manager($user)): ?>
+                                    <th>Setor solicitante</th>
+                                <?php endif; ?>
                                 <th>Criado em</th>
                                 <th class="action-cell">Acao</th>
                             </tr>
@@ -136,6 +165,9 @@ $sectorUsers = list_users_by_sector($user['sector']);
                                     <td><?= e($sectorUser['name']) ?></td>
                                     <td><?= e($sectorUser['email']) ?></td>
                                     <td><?= e(role_label($sectorUser['role'], $sectorUser['sector'])) ?></td>
+                                    <?php if (is_almoxarifado_manager($user)): ?>
+                                        <td><?= e((string) ($sectorUser['requester_sector_name'] ?? '')) ?></td>
+                                    <?php endif; ?>
                                     <td><?= e(date('d/m/Y H:i', strtotime((string) $sectorUser['created_at']))) ?></td>
                                     <td class="action-cell">
                                         <a class="table-action" href="<?= e(url_for('/setores/editar-usuario.php?id=' . (int) $sectorUser['id'])) ?>">Editar</a>

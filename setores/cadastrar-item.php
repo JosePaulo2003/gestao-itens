@@ -22,6 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = trim((string) ($_POST['name'] ?? ''));
         $description = trim((string) ($_POST['description'] ?? ''));
         $quantity = max(0, (int) ($_POST['quantity'] ?? 0));
+        $brandModel = trim((string) ($_POST['brand_model'] ?? ''));
+        $patrimonyNumber = trim((string) ($_POST['patrimony_number'] ?? ''));
+        $serialNumber = trim((string) ($_POST['serial_number'] ?? ''));
+        $otherMaterials = trim((string) ($_POST['other_materials'] ?? ''));
 
         // Nome e o minimo necessario para o item existir no estoque.
         if ($name === '') {
@@ -32,7 +36,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imagePath = save_item_image($_FILES['image'] ?? [], $user['sector']);
 
         // O item sempre entra vinculado ao setor do usuario logado.
-        create_item($user['sector'], $name, $description, $quantity, $imagePath, (int) $user['id']);
+        create_item(
+            $user['sector'],
+            $name,
+            $description,
+            $quantity,
+            $imagePath,
+            (int) $user['id'],
+            $brandModel,
+            $patrimonyNumber,
+            $serialNumber,
+            $otherMaterials
+        );
         $message = 'Item cadastrado com sucesso.';
     } catch (Throwable $exception) {
         // Qualquer erro de validacao/upload/banco aparece no topo da pagina.
@@ -79,6 +94,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     Descricao
                     <textarea name="description" rows="4"></textarea>
                 </label>
+
+                <?php if ($user['sector'] === 'almoxarifado'): ?>
+                    <label>
+                        Marca / modelo
+                        <input name="brand_model" type="text">
+                    </label>
+
+                    <label>
+                        Patrimonio
+                        <input name="patrimony_number" type="text">
+                    </label>
+
+                    <label>
+                        N. de serie
+                        <input name="serial_number" type="text">
+                    </label>
+
+                    <label class="full">
+                        Outros materiais
+                        <textarea name="other_materials" rows="3"></textarea>
+                        <span class="field-hint">Usado para preencher automaticamente o Termo de Emprestimo/Devolucao.</span>
+                    </label>
+                <?php endif; ?>
 
                 <label class="full">
                     Foto do item

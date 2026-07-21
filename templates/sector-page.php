@@ -63,6 +63,16 @@ foreach ($items as $item) {
                 <p>Gerar documento profissional com itens e movimentacoes.</p>
             </a>
             <?php if (is_admin($user)): ?>
+                <?php if (is_almoxarifado_manager($user)): ?>
+                    <a class="module-card module-link" href="<?= e(url_for('/setores/setores-solicitantes.php')) ?>">
+                        <h3>Setores solicitantes</h3>
+                        <p>Cadastrar setores que podem solicitar retirada de materiais.</p>
+                    </a>
+                    <a class="module-card module-link" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">
+                        <h3>Solicitacoes</h3>
+                        <p>Registrar retiradas, baixas e devolucoes do almoxarifado.</p>
+                    </a>
+                <?php endif; ?>
                 <a class="module-card module-link" href="<?= e(url_for('/setores/usuarios.php')) ?>">
                     <h3>Usuarios</h3>
                     <p>Cadastrar administradores e estagiarios do setor.</p>

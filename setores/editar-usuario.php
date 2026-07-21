@@ -35,13 +35,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim((string) ($_POST['email'] ?? ''));
         $password = (string) ($_POST['password'] ?? '');
         $role = (string) ($_POST['role'] ?? 'estagiario');
+        $requesterSectorId = (int) ($_POST['requester_sector_id'] ?? 0);
         $photoPath = save_user_photo($_FILES['photo'] ?? [], $targetUser['sector']);
 
         if ($name === '' || $email === '') {
             throw new RuntimeException('Preencha nome e e-mail do usuario.');
         }
 
-        update_user_account($targetUserId, $user, $name, $email, $role, $password, $photoPath);
+        update_user_account(
+            $targetUserId,
+            $user,
+            $name,
+            $email,
+            $role,
+            $password,
+            $photoPath,
+            $requesterSectorId > 0 ? $requesterSectorId : null
+        );
         $message = 'Usuario atualizado com sucesso.';
         $targetUser = find_user_for_edit($targetUserId, $user);
     } catch (Throwable $exception) {
@@ -52,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $targetSectorName = SECTORS[$targetUser['sector']] ?? $targetUser['sector'];
 $memberLabel = role_label('estagiario', $targetUser['sector']);
 $managerLabel = role_label('admin', $targetUser['sector']);
+$requesterSectors = $targetUser['sector'] === 'almoxarifado' ? list_requester_sectors(true) : [];
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -101,11 +112,28 @@ $managerLabel = role_label('admin', $targetUser['sector']);
                     <select name="role" required>
                         <option value="estagiario" <?= $targetUser['role'] === 'estagiario' ? 'selected' : '' ?>><?= e($memberLabel) ?></option>
                         <option value="admin" <?= $targetUser['role'] === 'admin' ? 'selected' : '' ?>><?= e($managerLabel) ?></option>
+                        <?php if ($targetUser['sector'] === 'almoxarifado'): ?>
+                            <option value="solicitante" <?= $targetUser['role'] === 'solicitante' ? 'selected' : '' ?>>Solicitante</option>
+                        <?php endif; ?>
                         <?php if (is_super_admin($user)): ?>
                             <option value="super_admin" <?= $targetUser['role'] === 'super_admin' ? 'selected' : '' ?>>Admin Maximo</option>
                         <?php endif; ?>
                     </select>
                 </label>
+
+                <?php if ($targetUser['sector'] === 'almoxarifado'): ?>
+                    <label>
+                        Setor solicitante
+                        <select name="requester_sector_id">
+                            <option value="">Somente para perfil Solicitante</option>
+                            <?php foreach ($requesterSectors as $requesterSector): ?>
+                                <option value="<?= (int) $requesterSector['id'] ?>" <?= (int) ($targetUser['requester_sector_id'] ?? 0) === (int) $requesterSector['id'] ? 'selected' : '' ?>>
+                                    <?= e($requesterSector['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                <?php endif; ?>
 
                 <label class="full">
                     Foto do usuario

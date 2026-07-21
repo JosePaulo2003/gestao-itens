@@ -9,7 +9,15 @@ declare(strict_types=1);
  * O usuario criado sempre fica preso ao setor do admin logado.
  */
 
-function create_user_account(string $name, string $email, string $password, string $sector, string $role, ?string $photoPath = null): void
+function create_user_account(
+    string $name,
+    string $email,
+    string $password,
+    string $sector,
+    string $role,
+    ?string $photoPath = null,
+    ?int $requesterSectorId = null
+): void
 {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         throw new RuntimeException('Informe um e-mail valido.');
@@ -23,9 +31,21 @@ function create_user_account(string $name, string $email, string $password, stri
         throw new RuntimeException('Perfil invalido.');
     }
 
+    if ($role === 'solicitante') {
+        if ($sector !== 'almoxarifado' || $requesterSectorId === null) {
+            throw new RuntimeException('Vincule o solicitante a um setor solicitante do almoxarifado.');
+        }
+
+        if (!requester_sector_is_active($requesterSectorId)) {
+            throw new RuntimeException('Setor solicitante invalido ou inativo.');
+        }
+    } else {
+        $requesterSectorId = null;
+    }
+
     $stmt = db()->prepare(
-        'INSERT INTO users (name, email, password_hash, sector, role, photo_path)
-         VALUES (:name, :email, :password_hash, :sector, :role, :photo_path)'
+        'INSERT INTO users (name, email, password_hash, sector, role, requester_sector_id, photo_path)
+         VALUES (:name, :email, :password_hash, :sector, :role, :requester_sector_id, :photo_path)'
     );
 
     $stmt->execute([
@@ -35,6 +55,7 @@ function create_user_account(string $name, string $email, string $password, stri
         'password_hash' => password_hash($password, PASSWORD_DEFAULT),
         'sector' => $sector,
         'role' => $role,
+        'requester_sector_id' => $requesterSectorId,
         'photo_path' => $photoPath,
     ]);
 }
@@ -42,11 +63,12 @@ function create_user_account(string $name, string $email, string $password, stri
 function list_users_by_sector(string $sector): array
 {
     $stmt = db()->prepare(
-        'SELECT id, name, email, sector, role, photo_path, created_at
-         FROM users
-         WHERE sector = :sector
-           AND role <> \'super_admin\'
-         ORDER BY role, name'
+        'SELECT u.id, u.name, u.email, u.sector, u.role, u.requester_sector_id, u.loan_blocked_until, u.loan_infraction_count, u.photo_path, u.created_at, rs.name AS requester_sector_name
+         FROM users u
+         LEFT JOIN requester_sectors rs ON rs.id = u.requester_sector_id
+         WHERE u.sector = :sector
+           AND u.role <> \'super_admin\'
+         ORDER BY u.role, u.name'
     );
     $stmt->execute(['sector' => $sector]);
 
@@ -82,9 +104,10 @@ function delete_user_account(int $userId, array $editor): void
 function find_user_for_edit(int $userId, array $editor): ?array
 {
     $stmt = db()->prepare(
-        'SELECT id, name, email, sector, role, photo_path, created_at
-         FROM users
-         WHERE id = :id
+        'SELECT u.id, u.name, u.email, u.sector, u.role, u.requester_sector_id, u.loan_blocked_until, u.loan_infraction_count, u.photo_path, u.created_at, rs.name AS requester_sector_name
+         FROM users u
+         LEFT JOIN requester_sectors rs ON rs.id = u.requester_sector_id
+         WHERE u.id = :id
          LIMIT 1'
     );
     $stmt->execute(['id' => $userId]);
@@ -114,7 +137,8 @@ function update_user_account(
     string $email,
     string $role,
     ?string $password = null,
-    ?string $photoPath = null
+    ?string $photoPath = null,
+    ?int $requesterSectorId = null
 ): void {
     $targetUser = find_user_for_edit($userId, $editor);
 
@@ -130,6 +154,18 @@ function update_user_account(
         throw new RuntimeException('Perfil invalido.');
     }
 
+    if ($role === 'solicitante') {
+        if ($targetUser['sector'] !== 'almoxarifado' || $requesterSectorId === null) {
+            throw new RuntimeException('Vincule o solicitante a um setor solicitante do almoxarifado.');
+        }
+
+        if (!requester_sector_is_active($requesterSectorId)) {
+            throw new RuntimeException('Setor solicitante invalido ou inativo.');
+        }
+    } else {
+        $requesterSectorId = null;
+    }
+
     if ($password !== null && $password !== '' && strlen($password) < 6) {
         throw new RuntimeException('A senha deve ter pelo menos 6 caracteres.');
     }
@@ -143,12 +179,14 @@ function update_user_account(
         'name = :name',
         'email = :email',
         'role = :role',
+        'requester_sector_id = :requester_sector_id',
     ];
     $params = [
         'id' => $userId,
         'name' => $name,
         'email' => $email,
         'role' => $role,
+        'requester_sector_id' => $requesterSectorId,
     ];
 
     if ($password !== null && $password !== '') {
@@ -176,4 +214,18 @@ function update_user_account(
             $_SESSION['user'] = $freshUser;
         }
     }
+}
+
+function requester_sector_is_active(int $requesterSectorId): bool
+{
+    $stmt = db()->prepare(
+        'SELECT id
+         FROM requester_sectors
+         WHERE id = :id
+           AND active = 1
+         LIMIT 1'
+    );
+    $stmt->execute(['id' => $requesterSectorId]);
+
+    return (bool) $stmt->fetch();
 }
