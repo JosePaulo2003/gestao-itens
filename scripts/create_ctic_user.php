@@ -13,6 +13,7 @@ require_once __DIR__ . '/../config/database.php';
 
 $passwordHash = password_hash('123456', PASSWORD_DEFAULT);
 
+// Mantém o usuário padrão do CTIC sempre consistente pelo e-mail.
 $stmt = db()->prepare(
     'INSERT INTO users (name, email, password_hash, sector, role)
      VALUES (:name, :email, :password_hash, :sector, :role)

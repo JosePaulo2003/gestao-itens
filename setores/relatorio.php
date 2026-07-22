@@ -19,33 +19,91 @@ $inStock = count_items_in_stock($items);
 $outOfStock = max(0, $totalItems - $inStock);
 $generatedAt = date('d/m/Y H:i');
 $today = date('d/m/Y');
-$showCticSignature = $user['sector'] !== 'almoxarifado';
+$showCticSignature = false;
 
+// Define os documentos disponíveis sem alterar a lista específica de cada setor.
 $documents = [
     'itens' => 'Itens cadastrados',
-    'movimentacoes' => 'Movimentacoes',
+    'movimentacoes' => 'Movimentações',
     'livro-registro' => 'Livro de registro',
     'cautela' => 'Cautela',
 ];
 
 if ($user['sector'] === 'almoxarifado') {
-    $documents['requisicao-materiais'] = 'Requisicao de materiais';
-    $documents['termo-emprestimo'] = 'Termo emprestimo/devolucao';
+    $documents['requisicao-materiais'] = 'Requisição de materiais';
+    $documents['termo-emprestimo'] = 'Termo empréstimo/devolução';
 }
 
 $documentType = (string) ($_GET['doc'] ?? 'itens');
 
+// Se alguém alterar a URL manualmente, volta para o documento padrão.
 if (!isset($documents[$documentType])) {
     $documentType = 'itens';
 }
 
+// A cautela sempre mostra quatro linhas; itens faltantes viram campos em branco.
 $cautionRows = array_slice($items, 0, 4);
 
 while (count($cautionRows) < 4) {
     $cautionRows[] = null;
 }
 
+$movementMode = (string) ($_GET['modo'] ?? 'resumo');
+$movementMode = $movementMode === 'detalhado' ? 'detalhado' : 'resumo';
+$movementLimit = 80;
+$stockMovements = array_values(array_filter(
+    $movements,
+    // O relatório de movimentações mostra mudanças de estoque; cadastros ficam em "Itens cadastrados".
+    static fn (array $movement): bool => (string) $movement['movement_type'] !== 'cadastro'
+));
+$registrationMovements = max(0, count($movements) - count($stockMovements));
+$movementRows = array_slice($stockMovements, 0, $movementLimit);
+$hiddenMovementRows = max(0, count($stockMovements) - count($movementRows));
+$movementSummary = [];
+
+// Agrupa movimentações por item para o relatório padrão não virar uma lista interminável.
+foreach ($stockMovements as $movement) {
+    $itemName = (string) $movement['item_name'];
+
+    if (!isset($movementSummary[$itemName])) {
+        $movementSummary[$itemName] = [
+            'item_name' => $itemName,
+            'total' => 0,
+            'entradas' => 0,
+            'saidas' => 0,
+            'ajustes' => 0,
+            'first_at' => (string) $movement['created_at'],
+            'last_at' => (string) $movement['created_at'],
+            'current_quantity' => (int) $movement['new_quantity'],
+            'delta_total' => 0,
+        ];
+    }
+
+    $movementSummary[$itemName]['total']++;
+    $movementSummary[$itemName]['delta_total'] += (int) $movement['quantity_delta'];
+
+    if ($movement['movement_type'] === 'entrada' || ($movement['movement_type'] === 'cadastro' && (int) $movement['quantity_delta'] > 0)) {
+        $movementSummary[$itemName]['entradas'] += max(0, (int) $movement['quantity_delta']);
+    } elseif ($movement['movement_type'] === 'saida') {
+        $movementSummary[$itemName]['saidas'] += abs((int) $movement['quantity_delta']);
+    } else {
+        $movementSummary[$itemName]['ajustes']++;
+    }
+
+    if (strtotime((string) $movement['created_at']) > strtotime($movementSummary[$itemName]['last_at'])) {
+        $movementSummary[$itemName]['last_at'] = (string) $movement['created_at'];
+        $movementSummary[$itemName]['current_quantity'] = (int) $movement['new_quantity'];
+    }
+
+    if (strtotime((string) $movement['created_at']) < strtotime($movementSummary[$itemName]['first_at'])) {
+        $movementSummary[$itemName]['first_at'] = (string) $movement['created_at'];
+    }
+}
+
+usort($movementSummary, static fn (array $a, array $b): int => strcmp($a['item_name'], $b['item_name']));
+
 $loanItemOptions = array_map(
+    // Dados enviados ao JavaScript para preencher campos do termo de empréstimo.
     static fn (array $item): array => [
         'id' => (int) $item['id'],
         'name' => (string) $item['name'],
@@ -62,7 +120,7 @@ $loanItemOptions = array_map(
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Relatorio - Gestao de Recurso Setorial</title>
+    <title>Relatório - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -86,17 +144,18 @@ $loanItemOptions = array_map(
         <?php endif; ?>
 
         <?php if ($documentType === 'itens'): ?>
+            <!-- Relatório de conferência do cadastro atual de itens do setor. -->
             <article class="report-document">
                 <header class="report-cover">
                     <div>
                         <span class="report-kicker">Documento de controle patrimonial interno</span>
-                        <h2>Relatorio de Itens Cadastrados</h2>
-                        <p>Gestao de Recurso Setorial - <?= e($sectorName) ?></p>
+                        <h2>Relatório de Itens Cadastrados</h2>
+                        <p>Gestão de Recurso Setorial - <?= e($sectorName) ?></p>
                     </div>
                     <div class="report-meta">
                         <strong>Gerado em</strong>
                         <span><?= e($generatedAt) ?></span>
-                        <strong>Responsavel</strong>
+                        <strong>Responsável</strong>
                         <span><?= e($user['name']) ?></span>
                     </div>
                 </header>
@@ -130,7 +189,7 @@ $loanItemOptions = array_map(
                                     <tr>
                                         <th>N.</th>
                                         <th>Item</th>
-                                        <th>Descricao</th>
+                                        <th>Descrição</th>
                                         <th>Quantidade</th>
                                         <th>Status</th>
                                         <th>Atualizado em</th>
@@ -156,7 +215,7 @@ $loanItemOptions = array_map(
                 <footer class="report-signature">
                     <div>
                         <span></span>
-                        <p>Responsavel pelo setor</p>
+                        <p>Responsável pelo setor</p>
                     </div>
                     <?php if ($showCticSignature): ?>
                         <div>
@@ -169,27 +228,36 @@ $loanItemOptions = array_map(
         <?php endif; ?>
 
         <?php if ($documentType === 'movimentacoes'): ?>
+            <!-- Relatório de auditoria das alterações de quantidade do estoque. -->
             <article class="report-document">
                 <header class="report-cover">
                     <div>
                         <span class="report-kicker">Documento de controle patrimonial interno</span>
-                        <h2>Relatorio de Movimentacoes</h2>
-                        <p>Gestao de Recurso Setorial - <?= e($sectorName) ?></p>
+                        <h2>Relatório de Movimentações</h2>
+                        <p>Gestão de Recurso Setorial - <?= e($sectorName) ?></p>
                     </div>
                     <div class="report-meta">
                         <strong>Gerado em</strong>
                         <span><?= e($generatedAt) ?></span>
-                        <strong>Responsavel</strong>
+                        <strong>Responsável</strong>
                         <span><?= e($user['name']) ?></span>
                     </div>
                 </header>
 
                 <section class="report-section">
-                    <h3>Resumo de movimentacoes</h3>
+                    <h3>Resumo de movimentações</h3>
                     <div class="report-summary">
                         <div>
-                            <span>Total</span>
-                            <strong><?= count($movements) ?></strong>
+                            <span>Atualizações de estoque</span>
+                            <strong><?= count($stockMovements) ?></strong>
+                        </div>
+                        <div>
+                            <span>Itens movimentados</span>
+                            <strong><?= count($movementSummary) ?></strong>
+                        </div>
+                        <div>
+                            <span>Cadastros/importações</span>
+                            <strong><?= $registrationMovements ?></strong>
                         </div>
                         <div>
                             <span>Setor</span>
@@ -199,12 +267,54 @@ $loanItemOptions = array_map(
                 </section>
 
                 <section class="report-section">
-                    <h3>Historico de movimentacoes</h3>
-                    <?php if (!$movements): ?>
-                        <p class="empty">Nenhuma movimentacao registrada ainda.</p>
-                    <?php else: ?>
+                    <div class="report-section-title-row">
+                        <h3><?= $movementMode === 'detalhado' ? 'Histórico detalhado' : 'Resumo por item' ?></h3>
+                        <div class="movement-report-actions no-print" aria-label="Modo de visualização das movimentações">
+                            <a class="<?= $movementMode === 'resumo' ? 'active' : '' ?>" href="<?= e(url_for('/setores/relatorio.php?doc=movimentacoes&modo=resumo')) ?>">Resumo</a>
+                            <a class="<?= $movementMode === 'detalhado' ? 'active' : '' ?>" href="<?= e(url_for('/setores/relatorio.php?doc=movimentacoes&modo=detalhado')) ?>">Detalhado</a>
+                        </div>
+                    </div>
+                    <?php if (!$stockMovements): ?>
+                        <p class="empty">
+                            Nenhuma entrada, saída ou baixa registrada ainda. Cadastros iniciais aparecem no relatório de itens cadastrados.
+                        </p>
+                    <?php elseif ($movementMode === 'resumo'): ?>
                         <div class="table-wrap">
-                            <table class="report-table">
+                            <table class="report-table movement-summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Mov.</th>
+                                        <th>Entradas</th>
+                                        <th>Saídas</th>
+                                        <th>Ajustes</th>
+                                        <th>Saldo atual</th>
+                                        <th>Última movimentação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($movementSummary as $summary): ?>
+                                        <tr>
+                                            <td><?= e($summary['item_name']) ?></td>
+                                            <td><?= (int) $summary['total'] ?></td>
+                                            <td><?= (int) $summary['entradas'] ?></td>
+                                            <td><?= (int) $summary['saidas'] ?></td>
+                                            <td><?= (int) $summary['ajustes'] ?></td>
+                                            <td><?= (int) $summary['current_quantity'] ?></td>
+                                            <td><?= e(date('d/m/Y H:i', strtotime((string) $summary['last_at']))) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <?php if ($hiddenMovementRows > 0): ?>
+                            <p class="report-hint">
+                                Exibindo as <?= count($movementRows) ?> movimentações mais recentes. Use o resumo para ver todos os itens consolidados.
+                            </p>
+                        <?php endif; ?>
+                        <div class="table-wrap">
+                            <table class="report-table movement-detail-table">
                                 <thead>
                                     <tr>
                                         <th>Data</th>
@@ -212,12 +322,12 @@ $loanItemOptions = array_map(
                                         <th>Movimento</th>
                                         <th>Anterior</th>
                                         <th>Atual</th>
-                                        <th>Diferenca</th>
-                                        <th>Usuario</th>
+                                        <th>Diferença</th>
+                                        <th>Usuário</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($movements as $movement): ?>
+                                    <?php foreach ($movementRows as $movement): ?>
                                         <tr>
                                             <td><?= e(date('d/m/Y H:i', strtotime((string) $movement['created_at']))) ?></td>
                                             <td><?= e($movement['item_name']) ?></td>
@@ -237,7 +347,7 @@ $loanItemOptions = array_map(
                 <footer class="report-signature">
                     <div>
                         <span></span>
-                        <p>Responsavel pelo setor</p>
+                        <p>Responsável pelo setor</p>
                     </div>
                     <?php if ($showCticSignature): ?>
                         <div>
@@ -250,6 +360,7 @@ $loanItemOptions = array_map(
         <?php endif; ?>
 
         <?php if ($documentType === 'livro-registro'): ?>
+            <!-- Livro de registro é editável antes da impressão porque segue modelo físico. -->
             <div class="registry-controls no-print">
                 <button type="button" id="add-registry-record">Adicionar registro na pagina</button>
             </div>
@@ -320,6 +431,7 @@ $loanItemOptions = array_map(
 
             <script>
                 (() => {
+                    // Duplica o bloco de registro para o usuário montar a página antes de imprimir.
                     const addButton = document.getElementById('add-registry-record');
                     const registryDocument = document.getElementById('registry-document');
                     const recordTemplate = document.getElementById('registry-record-template');
@@ -336,6 +448,7 @@ $loanItemOptions = array_map(
         <?php endif; ?>
 
         <?php if ($documentType === 'cautela'): ?>
+            <!-- Cautela usa os primeiros itens como sugestão, mas os campos seguem editáveis. -->
             <article class="caution-document document-sheet">
                 <div class="caution-corner caution-corner-top-left"></div>
                 <div class="caution-corner caution-corner-top-right"></div>
@@ -420,6 +533,7 @@ $loanItemOptions = array_map(
         <?php endif; ?>
 
         <?php if ($documentType === 'requisicao-materiais' && $user['sector'] === 'almoxarifado'): ?>
+            <!-- Requisição de materiais é exclusiva do almoxarifado e preenchida manualmente. -->
             <article class="material-request-document editable-template-document document-sheet">
                 <header class="material-request-header">
                     <div class="request-black-corner"></div>
@@ -435,7 +549,7 @@ $loanItemOptions = array_map(
                         <tr>
                             <th>Solicitado por</th>
                             <th>Codigo</th>
-                            <th>Descricao</th>
+                            <th>Descrição</th>
                             <th>Quantidade</th>
                             <th>Entregue por</th>
                             <th>Data</th>
@@ -446,7 +560,7 @@ $loanItemOptions = array_map(
                             <tr>
                                 <td><span class="editable-field table-fill" contenteditable="true"></span></td>
                                 <td><span class="editable-field table-fill" contenteditable="true"></span></td>
-                                <td><input class="material-description-input" list="material-request-items" type="text" aria-label="Descricao"></td>
+                                <td><input class="material-description-input" list="material-request-items" type="text" aria-label="Descrição"></td>
                                 <td><span class="editable-field table-fill" contenteditable="true"></span></td>
                                 <td><span class="editable-field table-fill" contenteditable="true"></span></td>
                                 <td><span class="editable-field table-fill" contenteditable="true"></span></td>
@@ -461,13 +575,14 @@ $loanItemOptions = array_map(
                 </datalist>
 
                 <footer class="material-request-footer">
-                    <strong>Responsavel setor solicitante: <span class="editable-field request-signature-field" contenteditable="true"></span></strong>
+                    <strong>Responsável setor solicitante: <span class="editable-field request-signature-field" contenteditable="true"></span></strong>
                     <strong>Data: <span class="editable-field request-date-field" contenteditable="true">___/___/___</span></strong>
                 </footer>
             </article>
         <?php endif; ?>
 
         <?php if ($documentType === 'termo-emprestimo' && $user['sector'] === 'almoxarifado'): ?>
+            <!-- Termo de empréstimo/devolução usa dados do item selecionado quando possível. -->
             <article class="loan-term-document editable-template-document document-sheet">
                 <header class="loan-term-header">
                     <img class="loan-term-logo" src="<?= e(asset_url('/assets/img/brasao-amazonas.png')) ?>" alt="Brasao do Estado do Amazonas">
@@ -483,11 +598,11 @@ $loanItemOptions = array_map(
                         <span id="loan-requester" class="editable-field" contenteditable="true"></span>
                     </div>
                     <div>
-                        <strong>Matricula:</strong>
+                        <strong>Matrícula:</strong>
                         <span id="loan-registration" class="editable-field" contenteditable="true"></span>
                     </div>
                     <div>
-                        <strong>Prof. Responsavel</strong>
+                        <strong>Prof. Responsável</strong>
                         <span id="loan-teacher" class="editable-field" contenteditable="true"></span>
                     </div>
                     <div>
@@ -533,10 +648,10 @@ $loanItemOptions = array_map(
                     <p>Pelo presente Termo de Entrega e Responsabilidade, o Requerente acima qualificado declara que recebeu o equipamento e/ou material acima especificados, de propriedade do Centro de Estudos Superiores de Itacoatiara - UEA, assumindo o compromisso de manter a guarda pessoal sobre os mesmos, ficando a seu cargo:</p>
                     <ul>
                         <li>Adequada utilizacao, de acordo com as recomendacoes;</li>
-                        <li>Comprometer-se a nao conceder emprestimos ou confiar a outrem;</li>
+                        <li>Comprometer-se a não conceder empréstimos ou confiar a outrem;</li>
                         <li>Comunicar imediatamente qualquer incidente ou ocorrencia com o equipamento sob sua guarda e/ou responsabilidade;</li>
                         <li>Indenizar os danos causados por negligencia, ma utilizacao, guarda inadequada, desleixo ou outro dano que possa decorrer, direta ou indiretamente de sua acao ou omissao;</li>
-                        <li>Devolver o material ou equipamento higienizado/limpo e nas mesmas condicoes que foram entregues;</li>
+                        <li>Devolver o material ou equipamento higienizado/limpo e nas mesmas condições que foram entregues;</li>
                     </ul>
                 </section>
 
@@ -548,7 +663,7 @@ $loanItemOptions = array_map(
 
                 <section class="loan-text-block">
                     <h3>Termo de Devolucao</h3>
-                    <p>Pelo presente Termo de Devolucao, o requerente acima qualificado declara que devolveu o equipamento e acessorios acima especificados, nas mesmas condicoes que os recebeu. O servidor do CESIT-UEA abaixo assinado, declara que recebeu os equipamentos em devolucao, nas mesmas condicoes de emprestimo.</p>
+                    <p>Pelo presente Termo de Devolução, o requerente acima qualificado declara que devolveu o equipamento e acessórios acima especificados, nas mesmas condições que os recebeu. O servidor do CESIT-UEA abaixo assinado declara que recebeu os equipamentos em devolução, nas mesmas condições de empréstimo.</p>
                 </section>
 
                 <section class="loan-observations">
@@ -566,6 +681,7 @@ $loanItemOptions = array_map(
 
             <script>
                 (() => {
+                    // Preenche tombo, serial e materiais acessórios ao escolher um item do datalist.
                     const items = <?= json_encode($loanItemOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
                     const itemInput = document.getElementById('loan-brand-model');
                     const setText = (id, value) => {

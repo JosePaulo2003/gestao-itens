@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 function list_items(string $sector): array
 {
+    // Lista apenas os itens do setor informado para manter cada estoque isolado.
     $stmt = db()->prepare(
         'SELECT id, name, description, brand_model, patrimony_number, serial_number, other_materials, quantity, in_stock, image_path, updated_at
          FROM items
@@ -34,6 +35,7 @@ function create_item(
     string $serialNumber = '',
     string $otherMaterials = ''
 ): void {
+    // Cria o item já com os campos extras usados nos documentos do almoxarifado.
     $pdo = db();
     $stmt = db()->prepare(
         'INSERT INTO items (sector, name, description, brand_model, patrimony_number, serial_number, other_materials, quantity, in_stock, image_path)
@@ -62,15 +64,17 @@ function create_item(
 
 function update_item_stock(int $itemId, string $sector, int $quantity, ?int $userId = null): void
 {
+    // Busca o item dentro do setor antes de alterar, evitando atualização cruzada.
     $currentItem = find_item_for_sector($itemId, $sector);
 
     if (!$currentItem) {
-        throw new RuntimeException('Item nao encontrado para este setor.');
+        throw new RuntimeException('Item não encontrado para este setor.');
     }
 
     $oldQuantity = (int) $currentItem['quantity'];
     $movementType = resolve_movement_type($oldQuantity, $quantity);
 
+    // Atualiza quantidade e status de disponibilidade a partir do saldo final.
     $stmt = db()->prepare(
         'UPDATE items
          SET quantity = :quantity, in_stock = :in_stock
@@ -91,6 +95,7 @@ function update_item_stock(int $itemId, string $sector, int $quantity, ?int $use
 
 function find_item_for_sector(int $itemId, string $sector): ?array
 {
+    // Consulta mínima para validar posse do item e obter a quantidade atual.
     $stmt = db()->prepare(
         'SELECT id, quantity
          FROM items
@@ -109,6 +114,7 @@ function find_item_for_sector(int $itemId, string $sector): ?array
 
 function resolve_movement_type(int $oldQuantity, int $newQuantity): string
 {
+    // Classifica o movimento pelo efeito real na quantidade.
     if ($newQuantity > $oldQuantity) {
         return 'entrada';
     }
@@ -129,6 +135,7 @@ function register_item_movement(
     int $newQuantity,
     ?string $notes
 ): void {
+    // O histórico alimenta os relatórios e preserva quem alterou o estoque.
     $stmt = db()->prepare(
         'INSERT INTO item_movements (item_id, sector, user_id, movement_type, old_quantity, new_quantity, quantity_delta, notes)
          VALUES (:item_id, :sector, :user_id, :movement_type, :old_quantity, :new_quantity, :quantity_delta, :notes)'

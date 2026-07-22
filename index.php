@@ -21,9 +21,11 @@ $error = '';
 $notice = '';
 
 if (($_GET['admin_maximo'] ?? '') === 'encerrado') {
+    // Aviso específico para diferenciar saída do Admin Máximo de erro de login.
     $notice = 'Sessao do Admin Maximo encerrada. Entre novamente com o usuario do setor desejado.';
 }
 
+// Processa login comum e também redirecionamentos vindos de páginas protegidas.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verify_csrf_token();
@@ -35,12 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $email !== '' ? find_user_by_email($email) : null;
 
         if ($user && password_verify($password, $user['password_hash'])) {
+            // Admin Máximo só entra pelo link com chave; login comum não abre esse perfil.
             if (is_super_admin($user) && !is_admin_max_path($nextUrl)) {
                 throw new RuntimeException('O Admin Maximo deve acessar pelo link protegido proprio.');
             }
 
             login_user($user);
 
+            // Quando o usuário tentou abrir uma página protegida, volta para ela após autenticar.
             if ($nextUrl !== null) {
                 header('Location: ' . $nextUrl);
                 exit;
@@ -98,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="post" class="login-form" autocomplete="on">
                 <?= csrf_field() ?>
+                <!-- Mantém a página original para onde o usuário deve voltar depois do login. -->
                 <?php if ($nextUrl !== null): ?>
                     <input type="hidden" name="next" value="<?= e($nextUrl) ?>">
                 <?php endif; ?>

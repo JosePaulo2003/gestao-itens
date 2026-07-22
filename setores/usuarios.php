@@ -13,20 +13,23 @@ if (!is_admin($user)) {
 $sectorName = SECTORS[$user['sector']];
 $managerLabel = role_label('admin', $user['sector']);
 $memberLabel = role_label('estagiario', $user['sector']);
-$requesterSectors = is_almoxarifado_manager($user) ? list_requester_sectors(true) : [];
+$canManageLoanRequests = can_manage_loan_requests($user);
+$requesterSectors = $canManageLoanRequests ? list_requester_sectors(true) : [];
 $activePage = 'usuarios';
 $message = '';
 $error = '';
 
+// A mesma tela cadastra usuários comuns, gestores e solicitantes quando o setor permite empréstimos.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verify_csrf_token();
 
         if (($_POST['action'] ?? '') === 'delete_user') {
+            // Exclusão passa pela regra de escopo em delete_user_account.
             $userId = (int) ($_POST['user_id'] ?? 0);
 
             delete_user_account($userId, $user);
-            $message = 'Usuario apagado com sucesso.';
+            $message = 'Usuário apagado com sucesso.';
         } else {
         // Dados basicos do usuario que sera criado.
         $name = trim((string) ($_POST['user_name'] ?? ''));
@@ -37,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Nome, e-mail e senha sao obrigatorios para permitir login.
         if ($name === '' || $email === '' || $password === '') {
-            throw new RuntimeException('Preencha nome, e-mail e senha do usuario.');
+            throw new RuntimeException('Preencha nome, e-mail e senha do usuário.');
         }
 
         // Foto e opcional. Quando enviada, fica em /uploads/users.
@@ -53,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $photoPath,
             $requesterSectorId > 0 ? $requesterSectorId : null
         );
-        $message = 'Usuario cadastrado com sucesso.';
+        $message = 'Usuário cadastrado com sucesso.';
         }
     } catch (Throwable $exception) {
         $error = $exception->getMessage();
@@ -68,7 +71,7 @@ $sectorUsers = list_users_by_sector($user['sector']);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Usuarios - Gestao de Recurso Setorial</title>
+    <title>Usuários - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -84,8 +87,8 @@ $sectorUsers = list_users_by_sector($user['sector']);
         <?php endif; ?>
 
         <section class="panel">
-            <h2>Cadastrar usuario</h2>
-            <p class="muted">O novo usuario sera vinculado ao setor <?= e($sectorName) ?>.</p>
+            <h2>Cadastrar usuário</h2>
+            <p class="muted">O novo usuário será vinculado ao setor <?= e($sectorName) ?>.</p>
 
             <form method="post" class="form-grid" autocomplete="off" enctype="multipart/form-data">
                 <?= csrf_field() ?>
@@ -110,13 +113,15 @@ $sectorUsers = list_users_by_sector($user['sector']);
                     <select name="role" required>
                         <option value="estagiario"><?= e($memberLabel) ?></option>
                         <option value="admin"><?= e($managerLabel) ?></option>
-                        <?php if (is_almoxarifado_manager($user)): ?>
+                        <!-- Solicitante aparece apenas para setores que trabalham com empréstimos. -->
+                        <?php if ($canManageLoanRequests): ?>
                             <option value="solicitante">Solicitante</option>
                         <?php endif; ?>
                     </select>
                 </label>
 
-                <?php if (is_almoxarifado_manager($user)): ?>
+                <?php if ($canManageLoanRequests): ?>
+                    <!-- O vínculo define a origem institucional do solicitante. -->
                     <label>
                         Setor solicitante
                         <select name="requester_sector_id">
@@ -125,25 +130,25 @@ $sectorUsers = list_users_by_sector($user['sector']);
                                 <option value="<?= (int) $requesterSector['id'] ?>"><?= e($requesterSector['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <span class="field-hint">Cadastre o setor solicitante antes de criar o usuario.</span>
+                        <span class="field-hint">Cadastre o setor solicitante antes de criar o usuário.</span>
                     </label>
                 <?php endif; ?>
 
                 <label class="full">
-                    Foto do usuario
+                    Foto do usuário
                     <input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-                    <span class="field-hint">Formatos aceitos: JPG, PNG, WEBP ou GIF. Tamanho maximo: 2 MB.</span>
+                    <span class="field-hint">Formatos aceitos: JPG, PNG, WEBP ou GIF. Tamanho máximo: 2 MB.</span>
                 </label>
 
-                <button type="submit">Cadastrar usuario</button>
+                <button type="submit">Cadastrar usuário</button>
             </form>
         </section>
 
         <section class="panel">
-            <h2>Usuarios do setor</h2>
+            <h2>Usuários do setor</h2>
 
             <?php if (!$sectorUsers): ?>
-                <p class="empty">Nenhum usuario cadastrado neste setor.</p>
+                <p class="empty">Nenhum usuário cadastrado neste setor.</p>
             <?php else: ?>
                 <div class="table-wrap">
                     <table>
@@ -152,11 +157,11 @@ $sectorUsers = list_users_by_sector($user['sector']);
                                 <th>Nome</th>
                                 <th>E-mail</th>
                                 <th>Perfil</th>
-                                <?php if (is_almoxarifado_manager($user)): ?>
+                                <?php if ($canManageLoanRequests): ?>
                                     <th>Setor solicitante</th>
                                 <?php endif; ?>
                                 <th>Criado em</th>
-                                <th class="action-cell">Acao</th>
+                                <th class="action-cell">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -165,13 +170,14 @@ $sectorUsers = list_users_by_sector($user['sector']);
                                     <td><?= e($sectorUser['name']) ?></td>
                                     <td><?= e($sectorUser['email']) ?></td>
                                     <td><?= e(role_label($sectorUser['role'], $sectorUser['sector'])) ?></td>
-                                    <?php if (is_almoxarifado_manager($user)): ?>
+                                    <?php if ($canManageLoanRequests): ?>
                                         <td><?= e((string) ($sectorUser['requester_sector_name'] ?? '')) ?></td>
                                     <?php endif; ?>
                                     <td><?= e(date('d/m/Y H:i', strtotime((string) $sectorUser['created_at']))) ?></td>
                                     <td class="action-cell">
                                         <a class="table-action" href="<?= e(url_for('/setores/editar-usuario.php?id=' . (int) $sectorUser['id'])) ?>">Editar</a>
-                                        <form method="post" class="inline-form" onsubmit="return confirm('Apagar este usuario? Esta acao nao pode ser desfeita.');">
+                                        <!-- O confirm evita apagar usuário por clique acidental. -->
+                                        <form method="post" class="inline-form" onsubmit="return confirm('Apagar este usuário? Esta ação não pode ser desfeita.');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete_user">
                                             <input type="hidden" name="user_id" value="<?= (int) $sectorUser['id'] ?>">

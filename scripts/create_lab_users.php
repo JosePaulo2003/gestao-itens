@@ -13,6 +13,7 @@ require_once __DIR__ . '/../config/database.php';
 
 $passwordHash = password_hash('123456', PASSWORD_DEFAULT);
 
+// Define um gestor e um bolsista para cada laboratório.
 $users = [
     ['Admin Lab Designer', 'designer@sas.local', 'lab-designer', 'admin'],
     ['Bolsista Lab Designer', 'bolsista.designer@sas.local', 'lab-designer', 'estagiario'],
@@ -27,6 +28,7 @@ $stmt = db()->prepare(
 );
 
 foreach ($users as [$name, $email, $sector, $role]) {
+    // ON DUPLICATE KEY torna a criação idempotente pelo e-mail.
     $stmt->execute([
         'name' => $name,
         'email' => $email,

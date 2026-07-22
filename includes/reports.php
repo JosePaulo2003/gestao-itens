@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 function list_item_movements(string $sector): array
 {
+    // Retorna o histórico do setor com nome do item e do usuário responsável.
     $stmt = db()->prepare(
         'SELECT
             m.id,
@@ -35,6 +36,7 @@ function list_item_movements(string $sector): array
 
 function count_items_in_stock(array $items): int
 {
+    // Conta itens disponíveis sem depender de uma nova consulta ao banco.
     $total = 0;
 
     foreach ($items as $item) {
@@ -48,16 +50,18 @@ function count_items_in_stock(array $items): int
 
 function movement_label(string $movementType): string
 {
+    // Centraliza os rótulos para relatórios e painéis exibirem o mesmo texto.
     return match ($movementType) {
         'cadastro' => 'Cadastro',
         'entrada' => 'Entrada',
-        'saida' => 'Saida',
+        'saida' => 'Saída',
         default => 'Ajuste',
     };
 }
 
 function system_admin_summary(): array
 {
+    // Monta os cartões globais do Admin Máximo com um registro por setor.
     $summary = [];
 
     foreach (SECTORS as $sectorKey => $sectorName) {
@@ -108,6 +112,7 @@ function system_admin_summary(): array
 
 function system_user_summary(): array
 {
+    // Agrupa usuários por setor e perfil para a visão administrativa.
     $stmt = db()->query(
         'SELECT sector, role, COUNT(*) AS total
          FROM users
@@ -121,6 +126,7 @@ function system_user_summary(): array
 
 function list_all_users_for_admin(): array
 {
+    // Lista global usada só pelo Admin Máximo; usuários comuns têm filtro setorial.
     $stmt = db()->query(
         'SELECT id, name, email, sector, role, photo_path, created_at
          FROM users
@@ -132,6 +138,7 @@ function list_all_users_for_admin(): array
 
 function list_recent_movements_for_admin(int $limit = 20): array
 {
+    // Mostra as últimas alterações de estoque no painel global.
     $stmt = db()->prepare(
         'SELECT
             m.created_at,

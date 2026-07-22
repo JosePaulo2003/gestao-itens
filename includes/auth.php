@@ -165,22 +165,34 @@ function require_sector(string $sector): array
 
 function is_admin(array $user): bool
 {
+    // Admin comum e Admin Máximo podem acessar telas administrativas.
     return in_array($user['role'] ?? '', ['admin', 'super_admin'], true);
 }
 
 function is_super_admin(array $user): bool
 {
+    // Perfil global usado apenas no painel Admin Máximo.
     return ($user['role'] ?? '') === 'super_admin';
 }
 
 function is_requester(array $user): bool
 {
+    // Solicitante não gerencia estoque; ele apenas abre e acompanha pedidos.
     return ($user['role'] ?? '') === 'solicitante';
 }
 
 function is_almoxarifado_manager(array $user): bool
 {
+    // Mantido por compatibilidade com regras específicas do almoxarifado.
     return ($user['sector'] ?? '') === 'almoxarifado' && is_admin($user);
+}
+
+function can_manage_loan_requests(array $user): bool
+{
+    // Gestores de todos os setores, exceto CTIC, podem controlar empréstimos.
+    return !is_requester($user)
+        && ($user['sector'] ?? '') !== 'ctic'
+        && is_admin($user);
 }
 
 function is_lab_sector(string $sector): bool
@@ -194,12 +206,8 @@ function can_manage_items(array $user): bool
         return false;
     }
 
-    // Nos laboratorios, bolsistas apenas consultam; admin segue gerenciando.
-    if (is_lab_sector($user['sector']) && !is_admin($user)) {
-        return false;
-    }
-
-    return true;
+    // Cadastro de itens e baixa de estoque ficam restritos ao gestor/admin do setor.
+    return is_admin($user);
 }
 
 function role_label(string $role, string $sector): string
@@ -236,6 +244,7 @@ function body_theme_class(array $user, string $activePage = ''): string
 
 function valid_admin_max_token(?string $token): bool
 {
+    // A chave do Admin Máximo é validada por hash, nunca comparada em texto puro.
     return is_string($token) && $token !== '' && password_verify($token, ADMIN_MAX_ACCESS_HASH);
 }
 

@@ -19,6 +19,7 @@ function create_user_account(
     ?int $requesterSectorId = null
 ): void
 {
+    // Valida os dados mínimos antes de gravar um usuário que poderá fazer login.
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         throw new RuntimeException('Informe um e-mail valido.');
     }
@@ -32,8 +33,9 @@ function create_user_account(
     }
 
     if ($role === 'solicitante') {
-        if ($sector !== 'almoxarifado' || $requesterSectorId === null) {
-            throw new RuntimeException('Vincule o solicitante a um setor solicitante do almoxarifado.');
+        // Solicitantes só existem em setores que trabalham com empréstimos.
+        if ($sector === 'ctic' || $requesterSectorId === null) {
+            throw new RuntimeException('Vincule o solicitante a um setor solicitante.');
         }
 
         if (!requester_sector_is_active($requesterSectorId)) {
@@ -62,6 +64,7 @@ function create_user_account(
 
 function list_users_by_sector(string $sector): array
 {
+    // Gestores setoriais enxergam apenas usuários do próprio setor.
     $stmt = db()->prepare(
         'SELECT u.id, u.name, u.email, u.sector, u.role, u.requester_sector_id, u.loan_blocked_until, u.loan_infraction_count, u.photo_path, u.created_at, rs.name AS requester_sector_name
          FROM users u
@@ -86,7 +89,7 @@ function delete_user_account(int $userId, array $editor): void
     $targetUser = find_user_for_edit($userId, $editor);
 
     if (!$targetUser) {
-        throw new RuntimeException('Usuario nao encontrado ou fora do seu setor.');
+        throw new RuntimeException('Usuário não encontrado ou fora do seu setor.');
     }
 
     if ((int) ($editor['id'] ?? 0) === $userId) {
@@ -94,7 +97,7 @@ function delete_user_account(int $userId, array $editor): void
     }
 
     if ($targetUser['role'] === 'super_admin') {
-        throw new RuntimeException('O Admin Maximo nao pode ser apagado por esta tela.');
+        throw new RuntimeException('O Admin Máximo não pode ser apagado por esta tela.');
     }
 
     $stmt = db()->prepare('DELETE FROM users WHERE id = :id LIMIT 1');
@@ -103,6 +106,7 @@ function delete_user_account(int $userId, array $editor): void
 
 function find_user_for_edit(int $userId, array $editor): ?array
 {
+    // Carrega o alvo uma vez e depois aplica as regras de escopo do editor.
     $stmt = db()->prepare(
         'SELECT u.id, u.name, u.email, u.sector, u.role, u.requester_sector_id, u.loan_blocked_until, u.loan_infraction_count, u.photo_path, u.created_at, rs.name AS requester_sector_name
          FROM users u
@@ -140,10 +144,11 @@ function update_user_account(
     ?string $photoPath = null,
     ?int $requesterSectorId = null
 ): void {
+    // A edição reaproveita a mesma barreira de setor usada na exclusão.
     $targetUser = find_user_for_edit($userId, $editor);
 
     if (!$targetUser) {
-        throw new RuntimeException('Usuario nao encontrado ou fora do seu setor.');
+        throw new RuntimeException('Usuário não encontrado ou fora do seu setor.');
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -155,8 +160,9 @@ function update_user_account(
     }
 
     if ($role === 'solicitante') {
-        if ($targetUser['sector'] !== 'almoxarifado' || $requesterSectorId === null) {
-            throw new RuntimeException('Vincule o solicitante a um setor solicitante do almoxarifado.');
+        // Ao editar, o vínculo com setor solicitante continua obrigatório.
+        if ($targetUser['sector'] === 'ctic' || $requesterSectorId === null) {
+            throw new RuntimeException('Vincule o solicitante a um setor solicitante.');
         }
 
         if (!requester_sector_is_active($requesterSectorId)) {
@@ -218,6 +224,7 @@ function update_user_account(
 
 function requester_sector_is_active(int $requesterSectorId): bool
 {
+    // Usado para impedir vínculo com setor solicitante apagado/inativo.
     $stmt = db()->prepare(
         'SELECT id
          FROM requester_sectors

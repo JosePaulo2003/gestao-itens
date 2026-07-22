@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/inventory.php';
 
 $user = require_login();
 
-if (!is_almoxarifado_manager($user)) {
+if (!can_manage_loan_requests($user)) {
     redirect_to_user_sector($user);
 }
 
@@ -13,6 +13,7 @@ $activePage = 'setores-solicitantes';
 $message = '';
 $error = '';
 
+// Cadastro simples dos setores que podem aparecer como solicitantes nos pedidos.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verify_csrf_token();
@@ -34,7 +35,7 @@ $requesterSectors = list_requester_sectors();
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Setores solicitantes - Gestao de Recurso Setorial</title>
+    <title>Setores solicitantes - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -51,7 +52,7 @@ $requesterSectors = list_requester_sectors();
 
         <section class="panel">
             <h2>Cadastrar setor solicitante</h2>
-            <p class="muted">Cada setor cadastrado pode ter usuarios do perfil Solicitante.</p>
+            <p class="muted">Cada setor cadastrado pode ter usuários do perfil Solicitante.</p>
 
             <form method="post" class="form-grid" autocomplete="off">
                 <?= csrf_field() ?>
@@ -77,6 +78,7 @@ $requesterSectors = list_requester_sectors();
                 <p class="empty">Nenhum setor solicitante cadastrado ainda.</p>
             <?php else: ?>
                 <div class="table-wrap">
+                    <!-- A tabela é somente leitura: inativação/edição ainda não faz parte do fluxo. -->
                     <table>
                         <thead>
                             <tr>

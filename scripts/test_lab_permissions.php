@@ -17,6 +17,7 @@ $emails = [
 ];
 
 foreach ($emails as $email) {
+    // Cada saída mostra o rótulo de tela e se o perfil pode gerenciar itens.
     $user = find_user_by_email($email);
 
     if (!$user) {
