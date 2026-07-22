@@ -692,6 +692,8 @@ p {
 .form-grid input,
 .form-grid textarea,
 .form-grid select,
+.stock-filter-form input,
+.stock-filter-form select,
 .stock-form input {
     width: 100%;
     min-height: 42px;
@@ -708,6 +710,7 @@ p {
 }
 
 .form-grid button,
+.stock-filter-form button,
 .stock-form button {
     min-height: 42px;
     border: 0;
@@ -725,8 +728,34 @@ p {
 }
 
 .form-grid button:hover,
+.stock-filter-form button:hover,
 .stock-form button:hover {
     background: var(--theme-secondary);
+}
+
+/* Filtro da tela de estoque: busca larga, status curto e ações compactas. */
+.stock-filter-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 190px auto auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+.stock-filter-form label {
+    display: grid;
+    gap: 7px;
+    color: var(--theme-muted);
+    font-weight: 700;
+}
+
+.stock-filter-form button {
+    padding: 0 18px;
+}
+
+.stock-filter-count {
+    /* Mostra o retorno do filtro sem competir visualmente com a tabela. */
+    margin-bottom: 16px;
 }
 
 .item-document-details {
@@ -1039,6 +1068,7 @@ td.loan-actions {
 }
 
 .document-sheet {
+    /* Cria um contexto isolado para ornamentos dos modelos de impressão. */
     isolation: isolate;
 }
 
@@ -1210,6 +1240,62 @@ td.loan-actions {
 .report-table td,
 .report-table th {
     border: 1px solid var(--theme-border);
+}
+
+.report-section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.report-section-title-row h3 {
+    margin-bottom: 0;
+}
+
+.movement-report-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.movement-report-actions a {
+    min-height: 34px;
+    padding: 0 12px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--theme-border);
+    border-radius: 999px;
+    background: var(--theme-panel);
+    color: var(--theme-primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.movement-report-actions a.active,
+.movement-report-actions a:hover {
+    border-color: var(--theme-primary);
+    background: var(--theme-soft);
+}
+
+.movement-summary-table th:nth-child(n+2),
+.movement-summary-table td:nth-child(n+2),
+.movement-detail-table th:nth-child(n+3),
+.movement-detail-table td:nth-child(n+3) {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.movement-summary-table td:first-child,
+.movement-detail-table td:nth-child(2) {
+    max-width: 420px;
+}
+
+.report-hint {
+    margin-bottom: 12px;
+    color: var(--theme-muted);
+    font-weight: 600;
 }
 
 .report-signature {
@@ -2091,6 +2177,10 @@ td.loan-actions {
         grid-template-columns: 1fr;
     }
 
+    .stock-filter-form {
+        grid-template-columns: 1fr;
+    }
+
     .stock-form {
         grid-template-columns: 1fr;
     }
@@ -2106,6 +2196,11 @@ td.loan-actions {
 
     .report-summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .report-section-title-row {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .report-toolbar {
@@ -2212,13 +2307,110 @@ td.loan-actions {
         box-shadow: none;
     }
 
+    .report-cover {
+        gap: 18px;
+        padding-bottom: 18px;
+        margin-bottom: 20px;
+    }
+
+    .report-cover h2 {
+        font-size: 1.55rem;
+    }
+
+    .report-meta {
+        min-width: 155px;
+        padding: 10px 12px;
+    }
+
     .report-section,
     .report-cover {
         break-inside: avoid;
     }
 
+    .report-section {
+        margin-bottom: 22px;
+    }
+
+    .report-section h3 {
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .report-summary {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .report-summary div {
+        padding: 10px 12px;
+        border-radius: 6px;
+    }
+
+    .report-summary span {
+        margin-bottom: 6px;
+        font-size: 0.72rem;
+        line-height: 1.2;
+    }
+
+    .report-summary strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+
     .report-table {
         font-size: 0.86rem;
+    }
+
+    .report-table td,
+    .report-table th {
+        padding: 8px 10px;
+    }
+
+    .movement-report-actions {
+        display: none;
+    }
+
+    .movement-summary-table {
+        width: 100%;
+        table-layout: fixed;
+        font-size: 0.76rem;
+    }
+
+    .movement-summary-table th:first-child,
+    .movement-summary-table td:first-child {
+        width: 26%;
+    }
+
+    .movement-summary-table th:nth-child(2),
+    .movement-summary-table td:nth-child(2) {
+        width: 8%;
+    }
+
+    .movement-summary-table th:nth-child(3),
+    .movement-summary-table td:nth-child(3),
+    .movement-summary-table th:nth-child(4),
+    .movement-summary-table td:nth-child(4),
+    .movement-summary-table th:nth-child(5),
+    .movement-summary-table td:nth-child(5) {
+        width: 11%;
+    }
+
+    .movement-summary-table th:nth-child(6),
+    .movement-summary-table td:nth-child(6) {
+        width: 14%;
+    }
+
+    .movement-summary-table th:nth-child(7),
+    .movement-summary-table td:nth-child(7) {
+        width: 19%;
+        white-space: normal;
+    }
+
+    .movement-summary-table td:first-child {
+        word-break: normal;
+        overflow-wrap: anywhere;
     }
 
     .registry-page-document {

@@ -13,11 +13,13 @@ $adminKey = (string) ($_GET['k'] ?? '');
 $message = '';
 $error = '';
 
+// Hoje o POST do painel global só executa exclusão de usuário.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verify_csrf_token();
 
         if (($_POST['action'] ?? '') === 'delete_user') {
+            // A regra interna impede apagar o próprio usuário e protege super_admin.
             $userId = (int) ($_POST['user_id'] ?? 0);
 
             delete_user_account($userId, $user);
@@ -60,6 +62,7 @@ $recentMovements = list_recent_movements_for_admin();
 
         <section class="panel">
             <h2>Resumo global por setor</h2>
+            <!-- Cartões agregados ajudam a revisar rapidamente a saúde de cada setor. -->
             <div class="admin-sector-grid">
                 <?php foreach ($summary as $sectorKey => $row): ?>
                     <article class="admin-sector-card">
@@ -78,6 +81,7 @@ $recentMovements = list_recent_movements_for_admin();
         <section class="panel">
             <h2>Todos os usuarios</h2>
             <div class="table-wrap">
+                <!-- Lista global para manutenção; edição preserva a chave do Admin Máximo na URL. -->
                 <table>
                     <thead>
                         <tr>
@@ -100,6 +104,7 @@ $recentMovements = list_recent_movements_for_admin();
                                 <td class="action-cell">
                                     <a class="table-action" href="<?= e(url_for('/setores/editar-usuario.php?id=' . (int) $row['id'] . '&k=' . urlencode($adminKey))) ?>">Editar</a>
                                     <?php if ($row['role'] !== 'super_admin'): ?>
+                                        <!-- Super_admin não aparece com botão de apagar para evitar perda do acesso global. -->
                                         <form method="post" class="inline-form" onsubmit="return confirm('Apagar este usuario? Esta acao nao pode ser desfeita.');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete_user">
@@ -117,6 +122,7 @@ $recentMovements = list_recent_movements_for_admin();
 
         <section class="panel">
             <h2>Ultimas movimentacoes</h2>
+            <!-- Histórico recente facilita auditoria sem entrar no relatório de cada setor. -->
             <?php if (!$recentMovements): ?>
                 <p class="empty">Nenhuma movimentacao registrada ainda.</p>
             <?php else: ?>

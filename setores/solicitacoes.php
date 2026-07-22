@@ -4,17 +4,19 @@ require_once __DIR__ . '/../includes/inventory.php';
 
 $user = require_login();
 
-if (!is_requester($user) && !is_almoxarifado_manager($user)) {
+if (!is_requester($user) && !can_manage_loan_requests($user)) {
     redirect_to_user_sector($user);
 }
 
 $sectorName = is_requester($user) ? 'SOLICITANTE' : SECTORS[$user['sector']];
+$canManageLoanRequests = can_manage_loan_requests($user);
 $activePage = 'solicitacoes';
 $message = '';
 $error = '';
-$items = list_items('almoxarifado');
+$items = list_items($user['sector']);
 $blockState = is_requester($user) ? requester_block_state((int) $user['id']) : null;
 
+// POST trata tanto criação pelo solicitante quanto ações de gestão do empréstimo.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verify_csrf_token();
@@ -22,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string) ($_POST['action'] ?? 'create');
 
         if ($action === 'create') {
+            // Solicitante abre pedido para item disponível no setor dele.
             create_material_loan_request(
                 $user,
                 (int) ($_POST['item_id'] ?? 0),
@@ -33,22 +36,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 trim((string) ($_POST['other_materials'] ?? '')),
                 isset($_POST['rules_accepted'])
             );
-            $message = 'Solicitacao enviada ao almoxarifado.';
+            $message = 'Solicitação enviada ao setor.';
         } elseif ($action === 'withdraw' || $action === 'return') {
+            // Gestor confirma saída ou devolução e o estoque é atualizado junto.
             update_material_loan_status((int) ($_POST['loan_id'] ?? 0), $user, $action);
             $message = $action === 'withdraw'
                 ? 'Retirada registrada e estoque atualizado.'
-                : 'Devolucao registrada e estoque atualizado.';
+                : 'Devolução registrada e estoque atualizado.';
         } elseif ($action === 'renew') {
+            // Renovação muda apenas a data limite de devolução.
             renew_material_loan_due_date((int) ($_POST['loan_id'] ?? 0), $user, (string) ($_POST['new_return_due_date'] ?? ''));
-            $message = 'Prazo de devolucao renovado.';
+            $message = 'Prazo de devolução renovado.';
         } elseif ($action === 'infraction') {
+            // Infração bloqueia o solicitante conforme a recorrência dele.
             $blockDays = register_material_loan_infraction(
                 (int) ($_POST['loan_id'] ?? 0),
                 $user,
                 trim((string) ($_POST['infraction_reason'] ?? ''))
             );
-            $message = 'Infracao registrada. Usuario bloqueado por ' . $blockDays . ' dias.';
+            $message = 'Infração registrada. Usuário bloqueado por ' . $blockDays . ' dias.';
         }
     } catch (Throwable $exception) {
         $error = $exception->getMessage();
@@ -63,7 +69,7 @@ $loans = list_material_loans_for_user($user);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Solicitacoes - Gestao de Recurso Setorial</title>
+    <title>Solicitações - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -81,8 +87,9 @@ $loans = list_material_loans_for_user($user);
         <?php if (is_requester($user)): ?>
             <section class="panel">
                 <h2>Solicitar retirada</h2>
+                <!-- Usuário bloqueado continua vendo o histórico, mas não abre pedido novo. -->
                 <?php if ($blockState && $blockState['blocked']): ?>
-                    <div class="notice error">Usuario bloqueado para novos emprestimos ate <?= e($blockState['blocked_until_label']) ?>. Infracoes registradas: <?= (int) $blockState['infraction_count'] ?>.</div>
+                    <div class="notice error">Usuário bloqueado para novos empréstimos até <?= e($blockState['blocked_until_label']) ?>. Infrações registradas: <?= (int) $blockState['infraction_count'] ?>.</div>
                 <?php else: ?>
                     <form method="post" class="form-grid" autocomplete="off">
                         <?= csrf_field() ?>
@@ -92,6 +99,7 @@ $loans = list_material_loans_for_user($user);
                             Item
                             <select name="item_id" required>
                                 <option value="">Selecione</option>
+                                <!-- A lista vem do estoque do setor do próprio solicitante. -->
                                 <?php foreach ($items as $item): ?>
                                     <option value="<?= (int) $item['id'] ?>"><?= e($item['name']) ?> - estoque <?= (int) $item['quantity'] ?></option>
                                 <?php endforeach; ?>
@@ -109,17 +117,17 @@ $loans = list_material_loans_for_user($user);
                         </label>
 
                         <label>
-                            Matricula
+                            Matrícula
                             <input name="registration_number" type="text">
                         </label>
 
                         <label>
-                            Prof. responsavel
+                            Prof. responsável
                             <input name="responsible_teacher" type="text">
                         </label>
 
                         <label>
-                            Data para devolucao
+                            Data para devolução
                             <input name="return_due_date" type="date" min="<?= e(date('Y-m-d')) ?>" required>
                         </label>
 
@@ -130,20 +138,20 @@ $loans = list_material_loans_for_user($user);
 
                         <label class="full checkbox-label">
                             <input name="rules_accepted" type="checkbox" value="1" required>
-                            <span>Declaro que o emprestimo tem prazo de validade e que devo cumprir as regras: uso adequado, nao repassar a terceiros, comunicar incidentes, indenizar danos por mau uso e devolver higienizado/limpo nas mesmas condicoes.</span>
+                            <span>Declaro que o empréstimo tem prazo de validade e que devo cumprir as regras: uso adequado, não repassar a terceiros, comunicar incidentes, indenizar danos por mau uso e devolver higienizado/limpo nas mesmas condições.</span>
                         </label>
 
-                        <button type="submit">Enviar solicitacao</button>
+                        <button type="submit">Enviar solicitação</button>
                     </form>
                 <?php endif; ?>
             </section>
         <?php endif; ?>
 
         <section class="panel">
-            <h2><?= is_requester($user) ? 'Minhas solicitacoes' : 'Solicitacoes dos setores' ?></h2>
+            <h2><?= is_requester($user) ? 'Minhas solicitações' : 'Solicitações dos setores' ?></h2>
 
             <?php if (!$loans): ?>
-                <p class="empty">Nenhuma solicitacao registrada.</p>
+                <p class="empty">Nenhuma solicitação registrada.</p>
             <?php else: ?>
                 <div class="table-wrap">
                     <table>
@@ -153,11 +161,11 @@ $loans = list_material_loans_for_user($user);
                                 <th>Requisitante</th>
                                 <th>Item</th>
                                 <th>Qtd.</th>
-                                <th>Devolucao</th>
+                                <th>Devolução</th>
                                 <th>Status</th>
                                 <th>Datas</th>
-                                <?php if (is_almoxarifado_manager($user)): ?>
-                                    <th class="action-cell">Acao</th>
+                                <?php if ($canManageLoanRequests): ?>
+                                    <th class="action-cell">Ação</th>
                                 <?php endif; ?>
                             </tr>
                         </thead>
@@ -197,8 +205,9 @@ $loans = list_material_loans_for_user($user);
                                             <small class="muted danger-text">Infracao: <?= e((string) $loan['infraction_reason']) ?> (<?= (int) $loan['block_days'] ?> dias)</small>
                                         <?php endif; ?>
                                     </td>
-                                    <?php if (is_almoxarifado_manager($user)): ?>
+                                    <?php if ($canManageLoanRequests): ?>
                                         <td class="action-cell loan-actions">
+                                            <!-- Botões mudam conforme o estágio do empréstimo. -->
                                             <?php if ($loan['status'] === 'solicitada'): ?>
                                                 <form method="post" class="inline-form">
                                                     <?= csrf_field() ?>
@@ -211,7 +220,7 @@ $loans = list_material_loans_for_user($user);
                                                     <?= csrf_field() ?>
                                                     <input type="hidden" name="action" value="return">
                                                     <input type="hidden" name="loan_id" value="<?= (int) $loan['id'] ?>">
-                                                    <button class="table-action" type="submit">Registrar devolucao</button>
+                                                    <button class="table-action" type="submit">Registrar devolução</button>
                                                 </form>
                                                 <form method="post" class="inline-form loan-renew-form">
                                                     <?= csrf_field() ?>
@@ -225,12 +234,12 @@ $loans = list_material_loans_for_user($user);
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="infraction">
                                                         <input type="hidden" name="loan_id" value="<?= (int) $loan['id'] ?>">
-                                                        <input name="infraction_reason" type="text" placeholder="Motivo da infracao" required>
-                                                        <button class="table-action danger-action" type="submit">Registrar infracao</button>
+                                                        <input name="infraction_reason" type="text" placeholder="Motivo da infração" required>
+                                                        <button class="table-action danger-action" type="submit">Registrar infração</button>
                                                     </form>
                                                 <?php endif; ?>
                                             <?php else: ?>
-                                                <span class="muted">Concluida</span>
+                                                <span class="muted">Concluída</span>
                                             <?php endif; ?>
                                         </td>
                                     <?php endif; ?>

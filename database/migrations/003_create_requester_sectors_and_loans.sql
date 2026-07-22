@@ -1,9 +1,11 @@
 -- Setores solicitantes e fluxo de solicitacao/retirada/devolucao do almoxarifado.
+-- Amplia os perfis para permitir usuario solicitante sem criar tabela separada.
 ALTER TABLE users
     MODIFY role ENUM('estagiario', 'admin', 'super_admin', 'solicitante') NOT NULL DEFAULT 'estagiario',
     ADD COLUMN requester_sector_id INT UNSIGNED NULL AFTER role;
 
 CREATE TABLE IF NOT EXISTS requester_sectors (
+    -- Setor externo/interno que aparece como origem do pedido.
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(140) NOT NULL,
     acronym VARCHAR(40) NULL,
@@ -12,6 +14,7 @@ CREATE TABLE IF NOT EXISTS requester_sectors (
 );
 
 CREATE TABLE IF NOT EXISTS material_loans (
+    -- Pedido de retirada com status e datas que acompanham o ciclo do empréstimo.
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     requester_sector_id INT UNSIGNED NOT NULL,
     requester_user_id INT UNSIGNED NOT NULL,

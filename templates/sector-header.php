@@ -132,7 +132,7 @@ $initial = strtoupper(substr((string) $user['name'], 0, 1));
         <?php endif; ?>
 
         <div>
-            <span class="eyebrow">Gestao de Recurso Setorial</span>
+            <span class="eyebrow">Gestão de Recurso Setorial</span>
             <h1><?= e($sectorName) ?></h1>
             <p><?= e($user['name']) ?> · <?= e($roleName) ?></p>
         </div>
@@ -142,22 +142,26 @@ $initial = strtoupper(substr((string) $user['name'], 0, 1));
 </header>
 
 <?php if (!is_super_admin($user)): ?>
-<nav class="sector-nav" aria-label="Navegacao do setor">
+<nav class="sector-nav" aria-label="Navegação do setor">
     <?php if (is_requester($user)): ?>
-        <a class="<?= $activePage === 'solicitacoes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">Solicitacoes</a>
+        <!-- Solicitante tem navegação reduzida: ele só acompanha e abre solicitações. -->
+        <a class="<?= $activePage === 'solicitacoes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">Solicitações</a>
     <?php else: ?>
-        <a class="<?= $activePage === 'home' ? 'active' : '' ?>" href="<?= e($homeUrl) ?>">Inicio</a>
+        <!-- Gestores e membros setoriais usam o menu padrão do próprio setor. -->
+        <a class="<?= $activePage === 'home' ? 'active' : '' ?>" href="<?= e($homeUrl) ?>">Início</a>
         <?php if (can_manage_items($user)): ?>
+            <!-- Somente gestor/admin do setor cadastra itens. -->
             <a class="<?= $activePage === 'cadastrar-item' ? 'active' : '' ?>" href="<?= e(url_for('/setores/cadastrar-item.php')) ?>">Cadastrar item</a>
         <?php endif; ?>
         <a class="<?= $activePage === 'estoque' ? 'active' : '' ?>" href="<?= e(url_for('/setores/estoque.php')) ?>">Estoque</a>
-        <a class="<?= $activePage === 'relatorio' ? 'active' : '' ?>" href="<?= e(url_for('/setores/relatorio.php')) ?>">Relatorio</a>
-        <?php if (is_almoxarifado_manager($user)): ?>
+        <a class="<?= $activePage === 'relatorio' ? 'active' : '' ?>" href="<?= e(url_for('/setores/relatorio.php')) ?>">Relatório</a>
+        <?php if (can_manage_loan_requests($user)): ?>
+            <!-- CTIC fica fora do fluxo de empréstimo; demais gestores veem estes links. -->
             <a class="<?= $activePage === 'setores-solicitantes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/setores-solicitantes.php')) ?>">Setores solicitantes</a>
-            <a class="<?= $activePage === 'solicitacoes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">Solicitacoes</a>
+            <a class="<?= $activePage === 'solicitacoes' ? 'active' : '' ?>" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">Solicitações</a>
         <?php endif; ?>
         <?php if (is_admin($user)): ?>
-            <a class="<?= $activePage === 'usuarios' ? 'active' : '' ?>" href="<?= e(url_for('/setores/usuarios.php')) ?>">Usuarios</a>
+            <a class="<?= $activePage === 'usuarios' ? 'active' : '' ?>" href="<?= e(url_for('/setores/usuarios.php')) ?>">Usuários</a>
         <?php endif; ?>
     <?php endif; ?>
 </nav>

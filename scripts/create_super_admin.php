@@ -13,6 +13,7 @@ require_once __DIR__ . '/../config/database.php';
 
 $passwordHash = password_hash('123456', PASSWORD_DEFAULT);
 
+// O Admin Máximo fica ligado ao CTIC no banco, mas seu papel é global.
 $stmt = db()->prepare(
     'INSERT INTO users (name, email, password_hash, sector, role)
      VALUES (:name, :email, :password_hash, :sector, :role)

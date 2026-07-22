@@ -13,6 +13,7 @@ require_once __DIR__ . '/includes/auth.php';
 $_SESSION = [];
 
 if (ini_get('session.use_cookies')) {
+    // Remove o cookie para impedir reuso da sessão privilegiada.
     $params = session_get_cookie_params();
     setcookie(session_name(), '', [
         'expires' => time() - 42000,
@@ -26,5 +27,6 @@ if (ini_get('session.use_cookies')) {
 
 session_destroy();
 
+// O parâmetro informa ao login que a saída foi intencional.
 header('Location: ' . url_for('/index.php?admin_maximo=encerrado'));
 exit;

@@ -19,6 +19,8 @@ $users = [
 ];
 
 $passwordHash = password_hash('123456', PASSWORD_DEFAULT);
+
+// Upsert permite rodar o script de novo sem criar registros duplicados.
 $stmt = db()->prepare(
     'INSERT INTO users (name, email, password_hash, sector, role)
      VALUES (:name, :email, :password_hash, :sector, :role)
@@ -26,6 +28,7 @@ $stmt = db()->prepare(
 );
 
 foreach ($users as [$name, $email, $sector, $role]) {
+    // Cada linha representa um usuário administrativo básico por setor.
     $stmt->execute([
         'name' => $name,
         'email' => $email,

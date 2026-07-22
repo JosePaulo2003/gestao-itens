@@ -16,7 +16,7 @@ $targetUser = find_user_for_edit($targetUserId, $user);
 
 if (!$targetUser) {
     http_response_code(404);
-    exit('Usuario nao encontrado ou fora do seu setor.');
+    exit('Usuário não encontrado ou fora do seu setor.');
 }
 
 $sectorName = is_super_admin($user) && isset($_GET['k']) ? 'ADMIN MAXIMO' : SECTORS[$user['sector']];
@@ -27,6 +27,7 @@ $backUrl = is_super_admin($user) && isset($_GET['k'])
 $message = '';
 $error = '';
 
+// Atualiza dados básicos, perfil, senha opcional e foto opcional do usuário selecionado.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verify_csrf_token();
@@ -39,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $photoPath = save_user_photo($_FILES['photo'] ?? [], $targetUser['sector']);
 
         if ($name === '' || $email === '') {
-            throw new RuntimeException('Preencha nome e e-mail do usuario.');
+            throw new RuntimeException('Preencha nome e e-mail do usuário.');
         }
 
         update_user_account(
@@ -52,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $photoPath,
             $requesterSectorId > 0 ? $requesterSectorId : null
         );
-        $message = 'Usuario atualizado com sucesso.';
+        $message = 'Usuário atualizado com sucesso.';
         $targetUser = find_user_for_edit($targetUserId, $user);
     } catch (Throwable $exception) {
         $error = $exception->getMessage();
@@ -62,14 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $targetSectorName = SECTORS[$targetUser['sector']] ?? $targetUser['sector'];
 $memberLabel = role_label('estagiario', $targetUser['sector']);
 $managerLabel = role_label('admin', $targetUser['sector']);
-$requesterSectors = $targetUser['sector'] === 'almoxarifado' ? list_requester_sectors(true) : [];
+$targetCanUseRequester = $targetUser['sector'] !== 'ctic';
+$requesterSectors = $targetCanUseRequester ? list_requester_sectors(true) : [];
 ?>
 <!doctype html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Editar usuario - Gestao de Recurso Setorial</title>
+    <title>Editar usuário - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -85,8 +87,8 @@ $requesterSectors = $targetUser['sector'] === 'almoxarifado' ? list_requester_se
         <?php endif; ?>
 
         <section class="panel">
-            <h2>Editar usuario</h2>
-            <p class="muted">Usuario vinculado ao setor <?= e($targetSectorName) ?>.</p>
+            <h2>Editar usuário</h2>
+            <p class="muted">Usuário vinculado ao setor <?= e($targetSectorName) ?>.</p>
 
             <form method="post" class="form-grid" autocomplete="off" enctype="multipart/form-data">
                 <?= csrf_field() ?>
@@ -112,16 +114,18 @@ $requesterSectors = $targetUser['sector'] === 'almoxarifado' ? list_requester_se
                     <select name="role" required>
                         <option value="estagiario" <?= $targetUser['role'] === 'estagiario' ? 'selected' : '' ?>><?= e($memberLabel) ?></option>
                         <option value="admin" <?= $targetUser['role'] === 'admin' ? 'selected' : '' ?>><?= e($managerLabel) ?></option>
-                        <?php if ($targetUser['sector'] === 'almoxarifado'): ?>
+                        <!-- Perfil solicitante exige vínculo com setor solicitante. -->
+                        <?php if ($targetCanUseRequester): ?>
                             <option value="solicitante" <?= $targetUser['role'] === 'solicitante' ? 'selected' : '' ?>>Solicitante</option>
                         <?php endif; ?>
                         <?php if (is_super_admin($user)): ?>
-                            <option value="super_admin" <?= $targetUser['role'] === 'super_admin' ? 'selected' : '' ?>>Admin Maximo</option>
+                            <!-- Só o Admin Máximo pode promover outro usuário para acesso global. -->
+                            <option value="super_admin" <?= $targetUser['role'] === 'super_admin' ? 'selected' : '' ?>>Admin Máximo</option>
                         <?php endif; ?>
                     </select>
                 </label>
 
-                <?php if ($targetUser['sector'] === 'almoxarifado'): ?>
+                <?php if ($targetCanUseRequester): ?>
                     <label>
                         Setor solicitante
                         <select name="requester_sector_id">
@@ -136,12 +140,12 @@ $requesterSectors = $targetUser['sector'] === 'almoxarifado' ? list_requester_se
                 <?php endif; ?>
 
                 <label class="full">
-                    Foto do usuario
+                    Foto do usuário
                     <input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
                     <span class="field-hint">Envie uma nova foto apenas se quiser substituir a atual.</span>
                 </label>
 
-                <button type="submit">Salvar alteracoes</button>
+                <button type="submit">Salvar alterações</button>
                 <a class="secondary-action" href="<?= e($backUrl) ?>">Voltar</a>
             </form>
         </section>

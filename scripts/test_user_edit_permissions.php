@@ -16,6 +16,7 @@ $cticAdmin = find_user_by_email('ctic@sas.local');
 $almoxAdmin = find_user_by_email('almoxarifado@sas.local');
 $superAdmin = find_user_by_email('admin.maximo@sas.local');
 
+// Cada booleano representa uma regra esperada do controle de edição.
 $canCticEditCtic = $cticAdmin ? find_user_for_edit((int) $cticAdmin['id'], $cticAdmin) !== null : false;
 $canAlmoxEditCtic = ($almoxAdmin && $cticAdmin) ? find_user_for_edit((int) $cticAdmin['id'], $almoxAdmin) !== null : false;
 $canCticEditSuper = ($cticAdmin && $superAdmin) ? find_user_for_edit((int) $superAdmin['id'], $cticAdmin) !== null : false;

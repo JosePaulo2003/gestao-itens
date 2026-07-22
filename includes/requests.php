@@ -2,8 +2,17 @@
 
 declare(strict_types=1);
 
+/*
+ * Regras de setores solicitantes e empréstimos.
+ *
+ * Este arquivo controla o ciclo completo de uma solicitação:
+ * cadastro do setor solicitante, abertura do pedido, retirada,
+ * devolução, renovação de prazo e bloqueio por infração.
+ */
+
 function list_requester_sectors(bool $activeOnly = false): array
 {
+    // Monta a consulta com filtro opcional para reutilizar em telas públicas e administrativas.
     $sql = 'SELECT id, name, acronym, active, created_at FROM requester_sectors';
 
     if ($activeOnly) {
@@ -17,6 +26,7 @@ function list_requester_sectors(bool $activeOnly = false): array
 
 function create_requester_sector(string $name, string $acronym = ''): void
 {
+    // O nome é obrigatório porque aparece nas solicitações e nos relatórios.
     if ($name === '') {
         throw new RuntimeException('Informe o nome do setor solicitante.');
     }
@@ -42,20 +52,31 @@ function create_material_loan_request(
     string $otherMaterials,
     bool $rulesAccepted
 ): void {
+    // Somente usuários do perfil solicitante podem abrir empréstimos.
     if (!is_requester($user)) {
-        throw new RuntimeException('Apenas usuarios solicitantes podem abrir solicitacoes.');
+        throw new RuntimeException('Apenas usuários solicitantes podem abrir solicitações.');
     }
 
+    // O setor do próprio usuário define de qual estoque o item será retirado.
+    $ownerSector = (string) ($user['sector'] ?? '');
+
+    // CTIC ficou fora da regra de empréstimos por definição do sistema.
+    if ($ownerSector === '' || $ownerSector === 'ctic') {
+        throw new RuntimeException('Este setor não recebe solicitações de empréstimo.');
+    }
+
+    // Todo solicitante precisa estar vinculado a um setor solicitante cadastrado.
     $requesterSectorId = (int) ($user['requester_sector_id'] ?? 0);
 
     if ($requesterSectorId <= 0) {
-        throw new RuntimeException('Usuario solicitante sem setor vinculado.');
+        throw new RuntimeException('Usuário solicitante sem setor vinculado.');
     }
 
     $blockState = requester_block_state((int) $user['id']);
 
+    // Usuários bloqueados por atraso ou infração não podem abrir novos pedidos.
     if ($blockState['blocked']) {
-        throw new RuntimeException('Usuario bloqueado para novos emprestimos ate ' . $blockState['blocked_until_label'] . '.');
+        throw new RuntimeException('Usuário bloqueado para novos empréstimos até ' . $blockState['blocked_until_label'] . '.');
     }
 
     if ($borrowerName === '') {
@@ -63,18 +84,19 @@ function create_material_loan_request(
     }
 
     if (!$rulesAccepted) {
-        throw new RuntimeException('Aceite as regras do termo para solicitar emprestimo.');
+        throw new RuntimeException('Aceite as regras do termo para solicitar empréstimo.');
     }
 
     if (!$returnDueDate) {
-        throw new RuntimeException('Informe a data para devolucao.');
+        throw new RuntimeException('Informe a data para devolução.');
     }
 
     $dueDate = DateTimeImmutable::createFromFormat('Y-m-d', $returnDueDate);
     $today = new DateTimeImmutable('today');
 
+    // A devolução nunca pode nascer vencida; pedidos vencidos são tratados depois como infração.
     if (!$dueDate || $dueDate < $today) {
-        throw new RuntimeException('A data para devolucao deve ser hoje ou uma data futura.');
+        throw new RuntimeException('A data para devolução deve ser hoje ou uma data futura.');
     }
 
     if ($itemId <= 0) {
@@ -82,10 +104,11 @@ function create_material_loan_request(
     }
 
     $requestedQuantity = max(1, $requestedQuantity);
-    $item = find_item_for_sector($itemId, 'almoxarifado');
+    $item = find_item_for_sector($itemId, $ownerSector);
 
+    // Garante que o solicitante não peça item de outro setor alterando o HTML.
     if (!$item) {
-        throw new RuntimeException('Item nao encontrado no almoxarifado.');
+        throw new RuntimeException('Item não encontrado neste setor.');
     }
 
     $stmt = db()->prepare(
@@ -130,13 +153,20 @@ function create_material_loan_request(
 
 function list_material_loans_for_user(array $user): array
 {
+    // A mesma listagem serve para solicitante e gestor, mas com escopos diferentes.
     $params = [];
     $where = '';
 
     if (is_requester($user)) {
-        $where = 'WHERE ml.requester_sector_id = :requester_sector_id';
+        // Solicitante vê apenas pedidos do próprio setor solicitante e do próprio setor dono.
+        $where = 'WHERE ml.requester_sector_id = :requester_sector_id AND i.sector = :owner_sector';
         $params['requester_sector_id'] = (int) ($user['requester_sector_id'] ?? 0);
-    } elseif (!is_almoxarifado_manager($user)) {
+        $params['owner_sector'] = (string) ($user['sector'] ?? '');
+    } elseif (can_manage_loan_requests($user)) {
+        // Gestor vê todos os pedidos que movimentam o estoque do setor dele.
+        $where = 'WHERE i.sector = :owner_sector';
+        $params['owner_sector'] = (string) $user['sector'];
+    } else {
         throw new RuntimeException('Acesso negado.');
     }
 
@@ -168,8 +198,9 @@ function list_material_loans_for_user(array $user): array
 
 function update_material_loan_status(int $loanId, array $manager, string $action): void
 {
-    if (!is_almoxarifado_manager($manager)) {
-        throw new RuntimeException('Apenas o gestor do almoxarifado pode registrar retirada ou devolucao.');
+    // Somente gestor de setor habilitado pode baixar estoque ou registrar devolução.
+    if (!can_manage_loan_requests($manager)) {
+        throw new RuntimeException('Apenas o gestor do setor pode registrar retirada ou devolução.');
     }
 
     $stmt = db()->prepare(
@@ -177,11 +208,16 @@ function update_material_loan_status(int $loanId, array $manager, string $action
          FROM material_loans ml
          INNER JOIN items i ON i.id = ml.item_id
          WHERE ml.id = :id
+           AND i.sector = :owner_sector
          LIMIT 1'
     );
-    $stmt->execute(['id' => $loanId]);
+    $stmt->execute([
+        'id' => $loanId,
+        'owner_sector' => (string) $manager['sector'],
+    ]);
     $loan = $stmt->fetch();
 
+    // A busca já limita pelo setor do gestor; se não achou, o pedido não pertence a ele.
     if (!$loan) {
         throw new RuntimeException('Solicitacao nao encontrada.');
     }
@@ -191,17 +227,19 @@ function update_material_loan_status(int $loanId, array $manager, string $action
 
     try {
         if ($action === 'withdraw') {
+            // A retirada consome o estoque e só pode acontecer uma vez por pedido pendente.
             if ($loan['status'] !== 'solicitada') {
-                throw new RuntimeException('Somente solicitacoes pendentes podem virar retirada.');
+                throw new RuntimeException('Somente solicitações pendentes podem virar retirada.');
             }
 
             $newQuantity = (int) $loan['quantity'] - (int) $loan['requested_quantity'];
 
+            // Impede o estoque de ficar negativo por retirada maior que o saldo atual.
             if ($newQuantity < 0) {
                 throw new RuntimeException('Estoque insuficiente para registrar a retirada.');
             }
 
-            update_item_stock((int) $loan['item_id'], 'almoxarifado', $newQuantity, (int) $manager['id']);
+            update_item_stock((int) $loan['item_id'], (string) $manager['sector'], $newQuantity, (int) $manager['id']);
 
             $update = db()->prepare(
                 'UPDATE material_loans
@@ -213,12 +251,13 @@ function update_material_loan_status(int $loanId, array $manager, string $action
                 'manager_user_id' => (int) $manager['id'],
             ]);
         } elseif ($action === 'return') {
+            // A devolução repõe o estoque somente quando o item realmente saiu antes.
             if ($loan['status'] !== 'retirada') {
                 throw new RuntimeException('Somente itens retirados podem ser registrados como devolvidos.');
             }
 
             $newQuantity = (int) $loan['quantity'] + (int) $loan['requested_quantity'];
-            update_item_stock((int) $loan['item_id'], 'almoxarifado', $newQuantity, (int) $manager['id']);
+            update_item_stock((int) $loan['item_id'], (string) $manager['sector'], $newQuantity, (int) $manager['id']);
 
             $update = db()->prepare(
                 'UPDATE material_loans
@@ -230,15 +269,17 @@ function update_material_loan_status(int $loanId, array $manager, string $action
                 'manager_user_id' => (int) $manager['id'],
             ]);
 
+            // Devolução fora do prazo bloqueia automaticamente o solicitante.
             if (loan_is_overdue($loan) && empty($loan['infraction_at'])) {
-                apply_requester_block($loan, $manager, 'Devolucao registrada fora do prazo.');
+                apply_requester_block($loan, $manager, 'Devolução registrada fora do prazo.');
             }
         } else {
-            throw new RuntimeException('Acao invalida.');
+            throw new RuntimeException('Ação inválida.');
         }
 
         $pdo->commit();
     } catch (Throwable $exception) {
+        // Se qualquer etapa falhar, desfaz estoque e status para não deixar dados pela metade.
         $pdo->rollBack();
         throw $exception;
     }
@@ -246,44 +287,50 @@ function update_material_loan_status(int $loanId, array $manager, string $action
 
 function renew_material_loan_due_date(int $loanId, array $manager, string $newDueDate): void
 {
-    if (!is_almoxarifado_manager($manager)) {
-        throw new RuntimeException('Apenas o gestor do almoxarifado pode renovar prazo.');
+    // Renovação de prazo é uma ação de gestor, porque altera a responsabilidade do pedido.
+    if (!can_manage_loan_requests($manager)) {
+        throw new RuntimeException('Apenas o gestor do setor pode renovar prazo.');
     }
 
     $dueDate = DateTimeImmutable::createFromFormat('Y-m-d', $newDueDate);
     $today = new DateTimeImmutable('today');
 
+    // O novo prazo também precisa ser atual ou futuro.
     if (!$dueDate || $dueDate < $today) {
-        throw new RuntimeException('Informe uma nova data de devolucao valida.');
+        throw new RuntimeException('Informe uma nova data de devolução válida.');
     }
 
     $stmt = db()->prepare(
         'UPDATE material_loans
          SET return_due_date = :return_due_date, manager_user_id = :manager_user_id
          WHERE id = :id
-           AND status = \'retirada\''
+           AND status = \'retirada\'
+           AND item_id IN (SELECT id FROM items WHERE sector = :owner_sector)'
     );
     $stmt->execute([
         'id' => $loanId,
         'return_due_date' => $newDueDate,
         'manager_user_id' => (int) $manager['id'],
+        'owner_sector' => (string) $manager['sector'],
     ]);
 
     if ($stmt->rowCount() === 0) {
-        throw new RuntimeException('Somente emprestimos retirados podem ter prazo renovado.');
+        throw new RuntimeException('Somente empréstimos retirados podem ter prazo renovado.');
     }
 }
 
 function register_material_loan_infraction(int $loanId, array $manager, string $reason): int
 {
-    if (!is_almoxarifado_manager($manager)) {
-        throw new RuntimeException('Apenas o gestor do almoxarifado pode registrar infracao.');
+    // Infração manual existe para casos em que houve descumprimento além do atraso automático.
+    if (!can_manage_loan_requests($manager)) {
+        throw new RuntimeException('Apenas o gestor do setor pode registrar infração.');
     }
 
     $reason = trim($reason);
 
+    // Mantém um motivo padrão para não registrar bloqueio sem explicação.
     if ($reason === '') {
-        $reason = 'Descumprimento das regras do termo de emprestimo.';
+        $reason = 'Descumprimento das regras do termo de empréstimo.';
     }
 
     $stmt = db()->prepare(
@@ -291,21 +338,26 @@ function register_material_loan_infraction(int $loanId, array $manager, string $
          FROM material_loans ml
          INNER JOIN items i ON i.id = ml.item_id
          WHERE ml.id = :id
+           AND i.sector = :owner_sector
          LIMIT 1'
     );
-    $stmt->execute(['id' => $loanId]);
+    $stmt->execute([
+        'id' => $loanId,
+        'owner_sector' => (string) $manager['sector'],
+    ]);
     $loan = $stmt->fetch();
 
+    // A consulta também garante que o gestor só mexa em empréstimo do próprio setor.
     if (!$loan) {
-        throw new RuntimeException('Solicitacao nao encontrada.');
+        throw new RuntimeException('Solicitação não encontrada.');
     }
 
     if ($loan['status'] !== 'retirada') {
-        throw new RuntimeException('A infracao deve ser registrada em um emprestimo retirado.');
+        throw new RuntimeException('A infração deve ser registrada em um empréstimo retirado.');
     }
 
     if (!empty($loan['infraction_at'])) {
-        throw new RuntimeException('Esta solicitacao ja possui infracao registrada.');
+        throw new RuntimeException('Esta solicitação já possui infração registrada.');
     }
 
     return apply_requester_block($loan, $manager, $reason);
@@ -313,6 +365,7 @@ function register_material_loan_infraction(int $loanId, array $manager, string $
 
 function apply_requester_block(array $loan, array $manager, string $reason): int
 {
+    // Cada nova infração aumenta a contagem do usuário e amplia o período de bloqueio.
     $pdo = db();
     $userId = (int) $loan['requester_user_id'];
     $stmt = $pdo->prepare('SELECT loan_infraction_count FROM users WHERE id = :id LIMIT 1');
@@ -322,6 +375,7 @@ function apply_requester_block(array $loan, array $manager, string $reason): int
     $blockDays = max(2, $newCount * 2);
     $blockedUntil = (new DateTimeImmutable())->modify('+' . $blockDays . ' days')->format('Y-m-d H:i:s');
 
+    // Primeiro bloqueia o usuário para impedir novos pedidos imediatamente.
     $updateUser = $pdo->prepare(
         'UPDATE users
          SET loan_infraction_count = :loan_infraction_count,
@@ -334,6 +388,7 @@ function apply_requester_block(array $loan, array $manager, string $reason): int
         'loan_blocked_until' => $blockedUntil,
     ]);
 
+    // Depois marca no empréstimo qual gestor registrou a infração e por quantos dias.
     $updateLoan = $pdo->prepare(
         'UPDATE material_loans
          SET manager_user_id = :manager_user_id,
@@ -354,6 +409,7 @@ function apply_requester_block(array $loan, array $manager, string $reason): int
 
 function requester_block_state(int $userId): array
 {
+    // Retorna o estado de bloqueio já pronto para validação e exibição em tela.
     $stmt = db()->prepare(
         'SELECT loan_blocked_until, loan_infraction_count
          FROM users
@@ -366,6 +422,7 @@ function requester_block_state(int $userId): array
     $blocked = false;
     $label = '';
 
+    // Bloqueios vencidos continuam no histórico, mas deixam de impedir solicitações.
     if ($blockedUntil !== '') {
         $blocked = strtotime($blockedUntil) > time();
         $label = date('d/m/Y H:i', strtotime($blockedUntil));
@@ -381,6 +438,7 @@ function requester_block_state(int $userId): array
 
 function loan_is_overdue(array $loan): bool
 {
+    // Considera o dia inteiro da devolução como válido até 23:59:59.
     if (empty($loan['return_due_date'])) {
         return false;
     }
@@ -390,6 +448,7 @@ function loan_is_overdue(array $loan): bool
 
 function material_loan_status_label(string $status): string
 {
+    // Traduz os valores internos do banco para textos curtos na interface.
     return [
         'solicitada' => 'Solicitada',
         'retirada' => 'Retirada',

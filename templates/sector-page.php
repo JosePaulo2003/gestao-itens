@@ -20,7 +20,7 @@ foreach ($items as $item) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= e($sectorName) ?> - Gestao de Recurso Setorial</title>
+    <title><?= e($sectorName) ?> - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -29,7 +29,7 @@ foreach ($items as $item) {
     <main class="dashboard">
         <section class="welcome sector-hero">
             <h2>Painel do setor <?= e($sectorName) ?></h2>
-            <p>Escolha uma area para gerenciar os recursos do setor.</p>
+            <p>Escolha uma área para gerenciar os recursos do setor.</p>
         </section>
 
         <section class="summary-grid" aria-label="Resumo do setor">
@@ -49,6 +49,7 @@ foreach ($items as $item) {
 
         <section class="actions-grid" aria-label="Modulos do setor">
             <?php if (can_manage_items($user)): ?>
+                <!-- Atalho aparece somente para gestor/admin, que pode alterar o estoque. -->
                 <a class="module-card module-link" href="<?= e(url_for('/setores/cadastrar-item.php')) ?>">
                     <h3>Cadastrar item</h3>
                     <p>Adicionar novos recursos ao estoque do setor.</p>
@@ -59,23 +60,25 @@ foreach ($items as $item) {
                 <p>Consultar itens e atualizar quantidades.</p>
             </a>
             <a class="module-card module-link" href="<?= e(url_for('/setores/relatorio.php')) ?>">
-                <h3>Relatorio</h3>
-                <p>Gerar documento profissional com itens e movimentacoes.</p>
+                <h3>Relatório</h3>
+                <p>Gerar documento profissional com itens e movimentações.</p>
             </a>
             <?php if (is_admin($user)): ?>
-                <?php if (is_almoxarifado_manager($user)): ?>
+                <?php if (can_manage_loan_requests($user)): ?>
+                    <!-- Gestores de setores com empréstimo acessam solicitantes e pedidos. -->
                     <a class="module-card module-link" href="<?= e(url_for('/setores/setores-solicitantes.php')) ?>">
                         <h3>Setores solicitantes</h3>
                         <p>Cadastrar setores que podem solicitar retirada de materiais.</p>
                     </a>
                     <a class="module-card module-link" href="<?= e(url_for('/setores/solicitacoes.php')) ?>">
-                        <h3>Solicitacoes</h3>
-                        <p>Registrar retiradas, baixas e devolucoes do almoxarifado.</p>
+                        <h3>Solicitações</h3>
+                        <p>Registrar retiradas, baixas e devoluções do setor.</p>
                     </a>
                 <?php endif; ?>
+                <!-- Cadastro de usuários é sempre função de administrador do setor. -->
                 <a class="module-card module-link" href="<?= e(url_for('/setores/usuarios.php')) ?>">
-                    <h3>Usuarios</h3>
-                    <p>Cadastrar administradores e estagiarios do setor.</p>
+                    <h3>Usuários</h3>
+                    <p>Cadastrar administradores e estagiários do setor.</p>
                 </a>
             <?php endif; ?>
         </section>

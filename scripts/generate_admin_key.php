@@ -10,6 +10,8 @@ declare(strict_types=1);
  *
  * Copie o hash gerado para config/admin_access.php.
  */
+
+// O token aparece uma única vez; o sistema guarda somente o hash.
 $token = bin2hex(random_bytes(24));
 $hash = password_hash($token, PASSWORD_DEFAULT);
 

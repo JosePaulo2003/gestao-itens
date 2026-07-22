@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 function configure_secure_session(): void
 {
+    // Scripts de terminal não precisam abrir sessão; páginas web abrem uma vez só.
     if (PHP_SAPI === 'cli' || session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
@@ -34,6 +35,7 @@ function configure_secure_session(): void
 
 function send_security_headers(): void
 {
+    // Headers só podem ser enviados antes de qualquer saída HTML.
     if (headers_sent()) {
         return;
     }
@@ -46,6 +48,7 @@ function send_security_headers(): void
 
 function csrf_token(): string
 {
+    // Um token por sessão protege todos os formulários contra envio externo.
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -55,11 +58,13 @@ function csrf_token(): string
 
 function csrf_field(): string
 {
+    // Gera o campo oculto já escapado para ser usado diretamente nos formulários.
     return '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
 }
 
 function verify_csrf_token(): void
 {
+    // Compara token da sessão e do POST sem vazar tempo de comparação.
     $sessionToken = $_SESSION['csrf_token'] ?? '';
     $postedToken = (string) ($_POST['csrf_token'] ?? '');
 

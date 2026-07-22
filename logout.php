@@ -14,6 +14,7 @@ require_once __DIR__ . '/includes/auth.php';
 $_SESSION = [];
 
 if (ini_get('session.use_cookies')) {
+    // Remove o cookie da sessão no navegador usando os mesmos parâmetros originais.
     $params = session_get_cookie_params();
     setcookie(session_name(), '', [
         'expires' => time() - 42000,
@@ -27,5 +28,6 @@ if (ini_get('session.use_cookies')) {
 
 session_destroy();
 
+// Depois de encerrar a sessão, sempre volta para o login comum.
 header('Location: ' . url_for('/index.php'));
 exit;

@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../includes/inventory.php';
 
-// Pagina protegida: somente usuarios logados podem cadastrar itens.
+// Pagina protegida: somente gestor/admin do setor pode cadastrar itens.
 $user = require_login();
 
 if (!can_manage_items($user)) {
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cadastrar item - Gestao de Recurso Setorial</title>
+    <title>Cadastrar item - Gestão de Recurso Setorial</title>
     <link rel="stylesheet" href="<?= e(asset_url('/assets/css/style.css')) ?>">
 </head>
 <body class="<?= e(body_theme_class($user, $activePage)) ?>">
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </label>
 
                 <label class="full">
-                    Descricao
+                    Descrição
                     <textarea name="description" rows="4"></textarea>
                 </label>
 

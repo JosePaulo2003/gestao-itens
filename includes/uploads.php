@@ -42,6 +42,7 @@ function save_uploaded_image(array $file, string $folder, string $prefix): ?stri
 
     $mimeType = mime_content_type($tmpName);
 
+    // A extensão final vem do MIME real do arquivo, não do nome enviado pelo usuário.
     if (!isset(IMAGE_EXTENSIONS[$mimeType])) {
         throw new RuntimeException('Envie uma foto em JPG, PNG, WEBP ou GIF.');
     }
@@ -66,10 +67,12 @@ function save_uploaded_image(array $file, string $folder, string $prefix): ?stri
 
 function save_item_image(array $file, string $sector): ?string
 {
+    // Imagens de itens ficam agrupadas em /uploads/items.
     return save_uploaded_image($file, 'items', $sector);
 }
 
 function save_user_photo(array $file, string $sector): ?string
 {
+    // Fotos de usuários usam prefixo diferente para facilitar auditoria do diretório.
     return save_uploaded_image($file, 'users', $sector . '-user');
 }
