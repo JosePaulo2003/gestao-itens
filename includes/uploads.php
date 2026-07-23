@@ -9,7 +9,7 @@ declare(strict_types=1);
  * salvas em /uploads. Isso evita duplicar regra em itens e usuarios.
  */
 
-const IMAGE_MAX_BYTES = 2097152; // 2 MB.
+const IMAGE_MAX_BYTES = 10485760; // 10 MB.
 
 const IMAGE_EXTENSIONS = [
     'image/jpeg' => 'jpg',
@@ -31,7 +31,7 @@ function save_uploaded_image(array $file, string $folder, string $prefix): ?stri
     }
 
     if (($file['size'] ?? 0) > IMAGE_MAX_BYTES) {
-        throw new RuntimeException('A imagem deve ter no maximo 2 MB.');
+        throw new RuntimeException('A imagem deve ter no maximo 10 MB.');
     }
 
     $tmpName = (string) ($file['tmp_name'] ?? '');

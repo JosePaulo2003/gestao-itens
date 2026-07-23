@@ -812,6 +812,10 @@ th {
     gap: 8px;
 }
 
+.stock-edit-action {
+    margin-top: 8px;
+}
+
 .stock-badge {
     display: inline-block;
     padding: 5px 9px;
@@ -867,6 +871,10 @@ th {
     color: var(--theme-muted);
     font-size: 0.76rem;
     text-align: center;
+}
+
+.item-photo-preview {
+    margin-bottom: 8px;
 }
 
 .notice {

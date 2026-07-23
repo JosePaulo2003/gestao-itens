@@ -137,7 +137,7 @@ $sectorUsers = list_users_by_sector($user['sector']);
                 <label class="full">
                     Foto do usuário
                     <input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-                    <span class="field-hint">Formatos aceitos: JPG, PNG, WEBP ou GIF. Tamanho máximo: 2 MB.</span>
+                    <span class="field-hint">Formatos aceitos: JPG, PNG, WEBP ou GIF. Tamanho máximo: 10 MB.</span>
                 </label>
 
                 <button type="submit">Cadastrar usuário</button>

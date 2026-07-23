@@ -62,6 +62,93 @@ function create_item(
     register_item_movement($itemId, $sector, $userId, 'cadastro', 0, $quantity, null);
 }
 
+function update_item_details(
+    int $itemId,
+    string $sector,
+    string $name,
+    string $description,
+    int $quantity,
+    ?string $imagePath = null,
+    ?int $userId = null,
+    string $brandModel = '',
+    string $patrimonyNumber = '',
+    string $serialNumber = '',
+    string $otherMaterials = ''
+): void {
+    $currentItem = find_item_for_sector($itemId, $sector);
+
+    if (!$currentItem) {
+        throw new RuntimeException('Item nao encontrado para este setor.');
+    }
+
+    if ($name === '') {
+        throw new RuntimeException('Informe o nome do item.');
+    }
+
+    $quantity = max(0, $quantity);
+    $oldQuantity = (int) $currentItem['quantity'];
+    $fields = [
+        'name = :name',
+        'description = :description',
+        'brand_model = :brand_model',
+        'patrimony_number = :patrimony_number',
+        'serial_number = :serial_number',
+        'other_materials = :other_materials',
+        'quantity = :quantity',
+        'in_stock = :in_stock',
+    ];
+    $params = [
+        'id' => $itemId,
+        'sector' => $sector,
+        'name' => $name,
+        'description' => $description,
+        'brand_model' => $brandModel !== '' ? $brandModel : null,
+        'patrimony_number' => $patrimonyNumber !== '' ? $patrimonyNumber : null,
+        'serial_number' => $serialNumber !== '' ? $serialNumber : null,
+        'other_materials' => $otherMaterials !== '' ? $otherMaterials : null,
+        'quantity' => $quantity,
+        'in_stock' => $quantity > 0 ? 1 : 0,
+    ];
+
+    if ($imagePath !== null) {
+        $fields[] = 'image_path = :image_path';
+        $params['image_path'] = $imagePath;
+    }
+
+    $pdo = db();
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare(
+            'UPDATE items
+             SET ' . implode(', ', $fields) . '
+             WHERE id = :id AND sector = :sector'
+        );
+        $stmt->execute($params);
+
+        if ($oldQuantity !== $quantity) {
+            register_item_movement(
+                $itemId,
+                $sector,
+                $userId,
+                resolve_movement_type($oldQuantity, $quantity),
+                $oldQuantity,
+                $quantity,
+                null
+            );
+        }
+
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $exception;
+    }
+}
+
 function update_item_stock(int $itemId, string $sector, int $quantity, ?int $userId = null): void
 {
     // Busca o item dentro do setor antes de alterar, evitando atualização cruzada.
@@ -97,7 +184,7 @@ function find_item_for_sector(int $itemId, string $sector): ?array
 {
     // Consulta mínima para validar posse do item e obter a quantidade atual.
     $stmt = db()->prepare(
-        'SELECT id, quantity
+        'SELECT id, sector, name, description, brand_model, patrimony_number, serial_number, other_materials, quantity, in_stock, image_path, updated_at
          FROM items
          WHERE id = :id AND sector = :sector
          LIMIT 1'
