@@ -134,7 +134,7 @@ $filteredTotal = count($filteredItems);
                                 <th>Quantidade</th>
                                 <th>Status</th>
                                 <?php if (can_manage_items($user)): ?>
-                                    <th>Atualizar</th>
+                                    <th>Gerenciar</th>
                                 <?php endif; ?>
                             </tr>
                         </thead>
@@ -182,6 +182,7 @@ $filteredTotal = count($filteredItems);
                                                 <input name="quantity" type="number" min="0" value="<?= (int) $item['quantity'] ?>" required>
                                                 <button type="submit">Salvar</button>
                                             </form>
+                                            <a class="table-action stock-edit-action" href="<?= e(url_for('/setores/editar-item.php?id=' . (int) $item['id'])) ?>">Editar</a>
                                         </td>
                                     <?php endif; ?>
                                 </tr>

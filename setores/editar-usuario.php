@@ -142,7 +142,7 @@ $requesterSectors = $targetCanUseRequester ? list_requester_sectors(true) : [];
                 <label class="full">
                     Foto do usuário
                     <input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-                    <span class="field-hint">Envie uma nova foto apenas se quiser substituir a atual.</span>
+                    <span class="field-hint">Envie uma nova foto apenas se quiser substituir a atual. Tamanho maximo: 10 MB.</span>
                 </label>
 
                 <button type="submit">Salvar alterações</button>
